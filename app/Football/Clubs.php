@@ -10,6 +10,20 @@ class Clubs
     private static function name(string $s): string { return preg_replace('/[^a-z0-9]/','',strtolower(Str::ascii($s))); }
     public static function photo(int $id): ?string { return $id>0?'https://media.api-sports.io/football/players/'.$id.'.png':null; }
     public static function position(string $p): string { return ['Goalkeeper'=>'Gardien','Defender'=>'Défenseur','Midfielder'=>'Milieu','Attacker'=>'Attaquant','Forward'=>'Attaquant'][$p]??'Poste non renseigné'; }
+    public static function country(?string $country): ?string
+    {
+        if($country===null||trim($country)==='')return null;
+        static $names=null;
+        if($names===null) {
+            $names=[];
+            foreach(\ResourceBundle::create('en','ICUDATA-region')->get('Countries') as $code=>$english) {
+                if(preg_match('/^[A-Z]{2}$/D',$code))$names[self::name($english)]=\Locale::getDisplayRegion('und_'.$code,'fr');
+            }
+            foreach(['Ivory Coast'=>'CI','DR Congo'=>'CD','Congo DR'=>'CD','USA'=>'US','Turkey'=>'TR'] as $english=>$code)$names[self::name($english)]=\Locale::getDisplayRegion('und_'.$code,'fr');
+            foreach(['England'=>'Angleterre','Scotland'=>'Écosse','Wales'=>'Pays de Galles','Northern Ireland'=>'Irlande du Nord'] as $english=>$french)$names[self::name($english)]=$french;
+        }
+        return $names[self::name($country)]??$country;
+    }
     public static function squad(array $players): array
     {
         $order=['Goalkeeper'=>0,'Defender'=>1,'Midfielder'=>2,'Attacker'=>3,'Forward'=>3];
@@ -43,6 +57,6 @@ class Clubs
         $r=$this->client->request('players/profiles',['player'=>$id],7*86400000,$manual);$raw=collect($r['data'])->firstWhere('player.id',$id)['player']??null;
         if(!$raw)throw new ApiError('La fiche de ce joueur n’est pas disponible.',404);
         $name=trim(implode(' ',array_filter([$raw['firstname']??null,$raw['lastname']??null])))?:($raw['name']??$member['name']);
-        return ['player'=>['id'=>$id,'name'=>$name,'shortName'=>$member['name'],'position'=>$member['position'],'number'=>$member['number'],'photo'=>self::photo($id),'age'=>$raw['age']??$member['age'],'birthDate'=>$raw['birth']['date']??null,'birthPlace'=>$raw['birth']['place']??null,'birthCountry'=>$raw['birth']['country']??null,'nationality'=>$raw['nationality']??null,'height'=>$raw['height']??null,'weight'=>$raw['weight']??null],'club'=>$details['club'],'fetchedAt'=>$r['fetchedAt'],'stale'=>$r['stale']||$details['stale'],'clubBudget'=>$this->client->budget()];
+        return ['player'=>['id'=>$id,'name'=>$name,'shortName'=>$member['name'],'position'=>$member['position'],'number'=>$member['number'],'photo'=>self::photo($id),'age'=>$raw['age']??$member['age'],'birthDate'=>$raw['birth']['date']??null,'birthPlace'=>$raw['birth']['place']??null,'birthCountry'=>self::country($raw['birth']['country']??null),'nationality'=>self::country($raw['nationality']??null),'height'=>$raw['height']??null,'weight'=>$raw['weight']??null],'club'=>$details['club'],'fetchedAt'=>$r['fetchedAt'],'stale'=>$r['stale']||$details['stale'],'clubBudget'=>$this->client->budget()];
     }
 }

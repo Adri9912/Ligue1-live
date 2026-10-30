@@ -50,12 +50,17 @@ class LeagueFeaturesTest extends TestCase
     public function test_club_squad_photo_profiles_membership_and_cache(): void {
         $registry=[['team'=>['id'=>85,'name'=>'Paris Saint Germain','founded'=>1970,'national'=>false],'venue'=>['name'=>'Parc des Princes','city'=>'Paris']]];
         $players=[['id'=>20,'name'=>'Attacker','position'=>'Attacker','number'=>null],['id'=>10,'name'=>'Keeper','position'=>'Goalkeeper','number'=>1]];
-        Http::fake(['*/standings?*'=>Http::response($this->table()),'*/teams?country*'=>Http::response(['response'=>$registry]),'*/players/squads*'=>Http::response(['response'=>[['team'=>['id'=>85],'players'=>$players]]]),'*/players/profiles*'=>Http::response(['response'=>[['player'=>['id'=>10,'firstname'=>'Full','lastname'=>'Keeper','nationality'=>'France','birth'=>['date'=>'2000-01-01'],'height'=>'190 cm']]]])]);
+        Http::fake(['*/standings?*'=>Http::response($this->table()),'*/teams?country*'=>Http::response(['response'=>$registry]),'*/players/squads*'=>Http::response(['response'=>[['team'=>['id'=>85],'players'=>$players]]]),'*/players/profiles*'=>Http::response(['response'=>[['player'=>['id'=>10,'firstname'=>'Full','lastname'=>'Keeper','nationality'=>'Belgium','birth'=>['date'=>'2000-01-01','country'=>'England'],'height'=>'190 cm']]]])]);
         $this->getJson('/api/clubs/73119')->assertOk()->assertJsonPath('club.id',73119)->assertJsonPath('squad.0.id',10)->assertJsonPath('squad.0.photo','https://media.api-sports.io/football/players/10.png')->assertJsonCount(14,'honours.seasons')->assertJsonPath('squad.1.number',null);
-        $this->getJson('/api/clubs/73119/players/10')->assertOk()->assertJsonPath('player.name','Full Keeper')->assertJsonPath('player.height','190 cm');
+        $this->getJson('/api/clubs/73119/players/10')->assertOk()->assertJsonPath('player.name','Full Keeper')->assertJsonPath('player.height','190 cm')->assertJsonPath('player.nationality','Belgique')->assertJsonPath('player.birthCountry','Angleterre');
         $this->getJson('/api/clubs/73119/players/999')->assertNotFound();
         $this->getJson('/api/clubs/999')->assertNotFound();Http::assertSentCount(4);
         $this->assertSame('2016–2017',Clubs::honours(91)['seasons'][0]);$this->assertFalse(Clubs::honours(999)['known']);
+    }
+    public function test_player_countries_use_french_labels_without_fabricating_unknown_values(): void {
+        foreach(['Belgium'=>'Belgique','Brazil'=>'Brésil','Netherlands'=>'Pays-Bas','England'=>'Angleterre','Northern-Ireland'=>'Irlande du Nord','Ivory-Coast'=>'Côte d’Ivoire','USA'=>'États-Unis','South Korea'=>'Corée du Sud','Belgique'=>'Belgique','Unknown Federation'=>'Unknown Federation'] as $input=>$expected)$this->assertSame($expected,Clubs::country($input));
+        $this->assertNull(Clubs::country(null));$this->assertNull(Clubs::country(''));
+        Http::assertNothingSent();
     }
     public function test_archives_share_quota_and_never_change_current_season(): void {
         $team=['id'=>85,'name'=>'Paris'];$row=['rank'=>1,'team'=>$team,'points'=>84,'goalsDiff'=>57,'form'=>'W','all'=>['played'=>34,'win'=>26,'draw'=>6,'lose'=>2,'goals'=>['for'=>92,'against'=>35]]];

@@ -76,7 +76,7 @@ Ne pas utiliser `php artisan cache:clear` au déploiement : cela effacerait les 
 
 ## Gestion privée de l’actualisation
 
-Il n’existe pas de compte administrateur dans l’application. Les visiteurs peuvent consulter et actualiser les données dans les limites du cache et du budget, mais aucun appel HTTP ne peut modifier le mode global. L’ancien `POST /api/control` répond systématiquement 403 et les anciennes valeurs publiques en cache sont ignorées.
+Il n’existe pas de compte administrateur dans l’application. Les visiteurs consultent les données actualisées automatiquement, sans bouton d’actualisation générale. Les boutons pour réessayer après une erreur ou poursuivre une recherche de composition restent disponibles et respectent le cache et le budget. Aucun appel HTTP ne peut modifier le mode global. L’ancien `POST /api/control` répond systématiquement 403 et les anciennes valeurs publiques en cache sont ignorées.
 
 Le propriétaire règle le mode dans le `.env` du serveur par SSH :
 

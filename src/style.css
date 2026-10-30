@@ -377,7 +377,7 @@
 .update-note,.players-footnote,.player-profile-note,.notification-limit { font-size:12px; line-height:1.75; }
 .match-bottom,.match-date,.round-date,.team-title p { font-size:11px; }
 .notification-banner-copy p { font-size:12px; }
-.data-control-bar { gap:12px 20px; margin-bottom:12px; flex-wrap:wrap; }
+.data-control-bar { gap:12px 20px; margin:12px 0; flex-wrap:wrap; }
 .data-control-state { font-size:12px; }
 .data-control-actions { margin-left:auto; }
 .manual-refresh-button { display:flex; align-items:center; gap:6px; min-height:30px; padding:5px 8px; font-size:11px; }

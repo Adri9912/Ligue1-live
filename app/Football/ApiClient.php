@@ -11,7 +11,10 @@ class ApiClient
         if (config('football.daily_limit') < 1 || config('football.daily_limit') > 100) throw new ApiError('Budget quotidien invalide.', 500);
     }
     public function key(): string { return (string) config($this->provider === 'highlightly' ? 'football.highlightly_key' : 'football.api_football_key'); }
-    public static function mode(): string { return Cache::get('football:mode', 'auto'); }
+    public static function mode(): string {
+        $mode=config('football.refresh_mode', 'auto');
+        return in_array($mode,['auto','manual','pause'],true) ? $mode : 'auto';
+    }
     private function canCall(bool $manual): bool { return self::mode() !== 'pause' && (self::mode() === 'auto' || $manual); }
     public function budget(): array
     {

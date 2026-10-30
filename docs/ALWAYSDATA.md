@@ -74,6 +74,16 @@ Une seule sauvegarde est conservée pour limiter l’espace disque ; prévoir de
 
 Ne pas utiliser `php artisan cache:clear` au déploiement : cela effacerait les compteurs du budget football.
 
-## Limite de cette version
+## Gestion privée de l’actualisation
 
-Les réglages Auto/Manuel/Pause restent partagés entre visiteurs comme dans la version d’origine. Le site est prévu pour un usage personnel ; une publication à un large public nécessitera de réserver ces réglages à l’administrateur et de revoir les limites de trafic/API.
+Il n’existe pas de compte administrateur dans l’application. Les visiteurs peuvent consulter et actualiser les données dans les limites du cache et du budget, mais aucun appel HTTP ne peut modifier le mode global. L’ancien `POST /api/control` répond systématiquement 403 et les anciennes valeurs publiques en cache sont ignorées.
+
+Le propriétaire règle le mode dans le `.env` du serveur par SSH :
+
+```dotenv
+FOOTBALL_REFRESH_MODE=auto
+```
+
+Valeurs autorisées : `auto` (défaut, calendrier quotidien et scores pendant les matchs), `manual` (appels déclenchés par les boutons, toujours sous les limites), `pause` (aucun nouvel appel fournisseur, cache consultable). Après modification, depuis `/home/ligue1-live/www/ligue1-live`, exécuter `php artisan config:cache`. Ne pas effacer le cache sportif ou les quotas.
+
+Pour changer le réglage : se connecter en SSH, lancer `cd ~/www/ligue1-live && nano .env`, ajouter ou modifier cette seule ligne, enregistrer avec Ctrl+O/Entrée et quitter avec Ctrl+X, puis lancer `php artisan config:cache`. Aucun mot de passe ou jeton d’administration n’est envoyé au navigateur. Le club favori, les alertes personnelles et le thème restent propres au navigateur de chaque visiteur.

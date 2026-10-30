@@ -6,4 +6,5 @@ return [
     'season' => env('FOOTBALL_SEASON'),
     'daily_limit' => (int) env('FOOTBALL_DAILY_LIMIT', 90),
     'spacing_ms' => 6500,
+    'refresh_mode' => env('FOOTBALL_REFRESH_MODE', 'auto'),
 ];

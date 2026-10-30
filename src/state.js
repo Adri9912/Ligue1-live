@@ -42,10 +42,6 @@ export async function syncStatus() {
   state.source = data.source; state.mode = data.mode; state.season = data.season
   return data
 }
-export async function setRefreshMode(mode) {
-  await api('/api/control', { method: 'POST', body: { mode } })
-  if (mode === 'auto') await load()
-}
 export const isUpcoming = match => ['NS', 'TBD', 'PST'].includes(match.status)
 export function statusLabel(match) {
   if (match.status === 'HT') return 'Mi-temps'

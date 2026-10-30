@@ -12,7 +12,7 @@ class FootballTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['football.provider'=>'highlightly','football.highlightly_key'=>'fake-private-key','football.api_football_key'=>'fake-other-key','football.season'=>2026,'football.daily_limit'=>90,'football.spacing_ms'=>0]);
+        config(['football.provider'=>'highlightly','football.highlightly_key'=>'fake-private-key','football.api_football_key'=>'fake-other-key','football.season'=>2026,'football.daily_limit'=>90,'football.spacing_ms'=>0,'football.refresh_mode'=>'auto']);
         Cache::flush();Http::preventStrayRequests();$this->travelTo(now()->setDate(2026,10,30)->setTime(12,0));
     }
     protected function tearDown(): void { $this->travelBack(); parent::tearDown(); }
@@ -35,9 +35,9 @@ class FootballTest extends TestCase
     public function test_pause_manual_and_budget_block_requests_before_sending(): void
     {
         Http::fake(['*'=>Http::response(['data'=>[]])]);
-        Cache::forever('football:mode','pause');
+        config(['football.refresh_mode'=>'pause']);
         $this->getJson('/api/matches')->assertStatus(409);Http::assertNothingSent();
-        Cache::forever('football:mode','manual');
+        config(['football.refresh_mode'=>'manual']);
         $this->getJson('/api/matches')->assertStatus(409);Http::assertNothingSent();
         $client=new ApiClient('highlightly');
         $client->request('test',[],1000,true);Http::assertSentCount(1);
@@ -52,7 +52,7 @@ class FootballTest extends TestCase
         $this->travel(2)->seconds();
         $old=$client->request('test',[],1000);
         $this->assertTrue($old['stale']);$this->assertSame($first['fetchedAt'],$old['fetchedAt']);$this->assertSame($first['data'],$old['data']);
-        Cache::forever('football:mode','pause');
+        config(['football.refresh_mode'=>'pause']);
         $this->assertTrue($client->request('test',[],1000)['stale']);Http::assertSentCount(2);
     }
     public function test_errors_and_wrong_competition_do_not_become_demo(): void
@@ -99,14 +99,25 @@ class FootballTest extends TestCase
         $this->getJson('/api/status')->assertOk()->assertJsonPath('source','highlightly')->assertDontSee('fake-private-key')->assertDontSee('fake-other-key');Http::assertNothingSent();
         $this->getJson('/api/unknown')->assertNotFound();
     }
-    public function test_control_validation_origin_and_request_modes(): void
+    public function test_public_requests_cannot_change_server_refresh_settings(): void
     {
-        $this->postJson('/api/control',['mode'=>'pause'])->assertOk()->assertJsonPath('refreshMode','pause')->assertJsonPath('nextRefreshAt',null);
+        // Une ancienne valeur publique ne doit plus pouvoir suspendre le site.
+        Cache::forever('football:mode','pause');
+        $this->getJson('/api/status')->assertOk()->assertJsonPath('refreshMode','auto');
+        foreach (['auto','manual','pause','invalid'] as $mode) {
+            $this->postJson('/api/control',['mode'=>$mode])->assertForbidden();
+            $this->postJson('/api/control',['mode'=>$mode],['Origin'=>'http://localhost'])->assertForbidden();
+            $this->postJson('/api/control',['mode'=>$mode],['Authorization'=>'Bearer fake-admin'])->assertForbidden();
+        }
+        $this->assertSame('pause',Cache::get('football:mode'));
+        $this->getJson('/api/status')->assertJsonPath('refreshMode','auto')->assertJsonPath('budget.used',0);
+        config(['football.refresh_mode'=>'pause']);
+        $this->postJson('/api/control',['mode'=>'auto'])->assertForbidden();
+        $this->getJson('/api/status')->assertJsonPath('refreshMode','pause')->assertJsonPath('nextRefreshAt',null);
         $this->getJson('/api/matches')->assertStatus(409);
-        $this->postJson('/api/control',['mode'=>'invalid'])->assertStatus(400);
-        $this->postJson('/api/control',['mode'=>'auto'],['Origin'=>'https://evil.example'])->assertStatus(403);
-        $this->postJson('/api/control',['mode'=>'auto'],['Sec-Fetch-Site'=>'cross-site'])->assertStatus(403);
-        $this->getJson('/api/status')->assertJsonPath('refreshMode','pause');Http::assertNothingSent();
+        config(['football.refresh_mode'=>'invalid']);
+        $this->assertSame('auto',ApiClient::mode());
+        Http::assertNothingSent();
     }
     public function test_file_cache_and_quota_survive_a_new_client_and_connection(): void
     {
@@ -120,7 +131,7 @@ class FootballTest extends TestCase
             $client=new ApiClient('highlightly');
             $this->assertSame($first,$client->request('test',[],1000));
             $this->assertSame(1,$client->budget()['used']);Http::assertSentCount(1);
-            $this->postJson('/api/control',['mode'=>'pause'])->assertOk();
+            config(['football.refresh_mode'=>'pause']);
             Cache::purge('file');$this->assertSame('pause',ApiClient::mode());
         } finally { \Illuminate\Support\Facades\File::deleteDirectory($directory); Cache::purge('file'); }
     }

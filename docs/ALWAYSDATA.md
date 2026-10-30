@@ -56,7 +56,7 @@ Le workflow `.github/workflows/checks.yml` teste l’interface et Laravel, puis 
 ### Activation
 
 1. Générer une clé SSH ED25519 dédiée au déploiement, sans réutiliser une clé personnelle.
-2. Ajouter sa **clé publique** à l’utilisateur SSH `ligue1-live` dans alwaysdata. Cette autorisation permet à GitHub Actions de mettre à jour le site avec les droits de cet utilisateur ; elle peut être révoquée en retirant cette clé.
+2. Connecté en SSH à alwaysdata, ajouter sa **clé publique** dans `~/.ssh/authorized_keys`, sans remplacer les clés existantes, avec le préfixe `restrict`. Le dossier `~/.ssh` doit avoir les droits `700` et le fichier `authorized_keys` les droits `600`. Sur le Cloud Public, l’ajout passe par ce fichier ; le champ dans l’administration est réservé au Cloud Privé. Cette autorisation permet à GitHub Actions de mettre à jour le site avec les droits de cet utilisateur ; elle peut être révoquée en retirant cette ligne. Voir la [documentation SSH alwaysdata](https://help.alwaysdata.com/fr/docs/hebergement-web/acces-distant/ssh/utiliser-des-cles-ssh/).
 3. Dans GitHub → Settings → Secrets and variables → Actions, ajouter la **clé privée** comme secret `ALWAYSDATA_SSH_KEY`. Ne jamais la mettre dans Git, dans le chat ou dans le README. Les clés football restent uniquement dans le `.env` du serveur.
 4. Lancer le workflow depuis `main` et contrôler le job « Déploiement alwaysdata ». Tant que le secret est absent, le déploiement est désactivé sans faire échouer les tests.
 

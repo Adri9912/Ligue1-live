@@ -17,7 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\App\Football\ApiError $e, Request $request) {
-            return response()->json(['error' => $e->getMessage()], $e->getStatusCode())->header('Cache-Control', 'no-store');
+            try { $meta=(new \App\Football\League)->metadata(); } catch (\Throwable) { $meta=[]; }
+            return response()->json([...$meta,'error' => $e->getMessage()], $e->getStatusCode())->header('Cache-Control', 'no-store');
         });
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),

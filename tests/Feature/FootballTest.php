@@ -133,4 +133,16 @@ class FootballTest extends TestCase
         $this->travel(1)->days();$this->assertSame(0,$client->budget()['used']);
         $this->assertSame(90,$client->budget()['remaining']);
     }
+    public function test_import_reuses_node_cache_without_lowering_an_existing_budget(): void
+    {
+        $directory=sys_get_temp_dir().'/l1-import-'.bin2hex(random_bytes(8));mkdir($directory.'/highlightly',0700,true);
+        $disk=['day'=>'2026-10-30','used'=>2,'cache'=>['https://soccer.highlightly.net/test?season=2026'=>['data'=>['data'=>['cached']],'time'=>Schedule::now()]],'providerQuota'=>['day'=>'2026-10-30','remaining'=>98,'observedAt'=>Schedule::now()]];
+        file_put_contents($directory.'/highlightly/football.json',json_encode($disk));
+        Cache::forever('football:quota:highlightly',['day'=>'2026-10-30','used'=>5,'providerRemaining'=>95]);
+        try {
+            $this->artisan('football:import-node-cache',['--from'=>$directory])->assertSuccessful();
+            $client=new ApiClient('highlightly');$r=$client->request('test',['season'=>2026],60000);
+            $this->assertSame(['cached'],$r['data']['data']);$this->assertSame(5,$client->budget()['used']);$this->assertSame(95,$client->budget()['providerRemaining']);Http::assertNothingSent();
+        } finally { \Illuminate\Support\Facades\File::deleteDirectory($directory); }
+    }
 }

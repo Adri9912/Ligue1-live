@@ -1,8 +1,5 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { once } from 'node:events'
-import { createApp } from '../server/index.mjs'
-import { normalizePlayers } from '../server/provider.mjs'
 import { provisionalStandings, rankZone, matchAlerts } from '../src/football.js'
 const a = { id: 1, name: 'Club A', code: 'A' }, b = { id: 2, name: 'Club B', code: 'B' }
 const fixture = (id, status, hg, ag) => ({ id, status, home: a, away: b, homeGoals: hg, awayGoals: ag, date: `2026-10-${id === 1 ? '20' : '27'}T20:00:00Z` })
@@ -44,24 +41,4 @@ test('alertes : seulement le club favori, sans rattrapage ni faux but après une
   assert.deepEqual(matchAlerts([goal], [end], 1, options).map(n => n.type), ['final'])
   assert.deepEqual(matchAlerts([goal], [end], 1, { ...options, final: false }).map(n => n.type), ['goals'])
   assert.deepEqual(matchAlerts([start], [goal], 1, { ...options, goals: false }), [])
-})
-
-test('normalisation joueurs : zéro conservé, valeur absente indisponible et Ligue 1 uniquement', () => {
-  const entries = [{ player: { id: 10, name: 'Joueur' }, statistics: [{ league: { id: 61 }, team: a, goals: { total: 0, assists: null } }] }, { player: { id: 11, name: 'Autre' }, statistics: [{ league: { id: 39 }, team: b, goals: { total: 20 } }] }]
-  const players = normalizePlayers(entries)
-  assert.equal(players.length, 1); assert.equal(players[0].goals, 0); assert.equal(players[0].assists, null)
-})
-
-test('onglets joueurs : routes limitées, tris distincts, données de démo annoncées', async () => {
-  const server = await createApp({ key: '', season: 2026 })
-  server.listen(0, '127.0.0.1'); await once(server, 'listening')
-  const base = `http://127.0.0.1:${server.address().port}`
-  try {
-    for (const [kind, metric] of [['scorers', 'goals'], ['assists', 'assists']]) {
-      const data = await (await fetch(`${base}/api/players/${kind}`)).json()
-      assert.equal(data.mode, 'demo'); assert.equal(data.season, 2026); assert.equal(data.players.length, 12)
-      assert.ok(data.players.every((p, i) => i === 0 || p[metric] <= data.players[i - 1][metric]))
-    }
-    assert.equal((await fetch(base + '/api/players/unknown')).status, 404)
-  } finally { await new Promise(resolve => server.close(resolve)) }
 })

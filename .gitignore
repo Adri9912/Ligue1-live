@@ -5,3 +5,11 @@ dist/
 !.env.example
 .cache/
 *.log
+
+/vendor/
+/.phpunit.cache/
+/.phpunit.result.cache
+/public/hot
+/public/storage
+/bootstrap/cache/*.php
+/storage/**/*.log

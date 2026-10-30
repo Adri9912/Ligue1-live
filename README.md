@@ -192,3 +192,14 @@ Le favori est une préférence du navigateur (`localStorage`, clés `l1-favorite
 ### Logo de la Ligue 1
 
 Le filigrane et le rappel dans le pied de page utilisent `public/images/ligue1-logo.png`, conservé localement (aucun chargement externe). Source : [Ligue 1 2024 Logo — Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ligue_1_2024_Logo.png), auteur Ligue 1, fiche PD-textlogo. L’image originale est conservée ; le masque CSS adapte sa couleur et son opacité au thème. Identité présentée par la [LFP le 27 mars 2024](https://www.lfp.fr/article/un-nouveau-logo-pour-la-ligue-1-a-compter-de-2024-2025). Le site reste un projet indépendant.
+
+
+## Migration Laravel en cours
+
+Branche : `codex/migration-laravel`. Le backend Node et les commandes npm restent la référence fonctionnelle pendant la migration. Le socle Laravel 13 est installé à la racine, sans modification de Vue ou des clés football existantes.
+
+Prérequis : PHP 8.3 ou supérieur (PHP 8.5 utilisé pour ce verrou de dépendances), Composer. Installer avec `composer install`, ajouter `APP_KEY=` dans le fichier privé `.env` puis lancer `php artisan key:generate`. Le cache et les sessions utilisent des fichiers ; aucune base de données n’est nécessaire à ce stade.
+
+Tests PHP : `php artisan test`. Démarrage isolé : `php artisan serve --host=127.0.0.1 --port=8000`. `/up` vérifie le démarrage ; `/` décrit l’état de migration, sans exposer les clés. Le proxy Vue pointe encore vers Node : les routes football ne sont pas encore portées en PHP.
+
+Reste à migrer avant toute bascule : transport HTTP des deux fournisseurs, verrous/quota/cache, calendrier et classement, détails des matchs, clubs/profils/compositions, archives et démonstration. Les tests de contrat devront valider les mêmes réponses et protections qu’avec Node. Ne pas déployer cette branche comme une migration terminée.

@@ -1,6 +1,6 @@
 import { reactive, computed } from 'vue'
-import { liveStatuses, finishedStatuses, isLive, isFinished } from './football'
-import { observeMatches, resetAlertBaseline } from './notifications'
+import { liveStatuses, finishedStatuses, isLive, isFinished } from './football.js'
+import { observeMatches, resetAlertBaseline } from './notifications.js'
 export { liveStatuses, finishedStatuses, isLive, isFinished }
 function read(key, fallback) { try { return localStorage.getItem(key) || fallback } catch { return fallback } }
 export const state = reactive({

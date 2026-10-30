@@ -37,7 +37,7 @@ export function refreshManually() {
   pending = (async () => {
     const data = await api('/api/refresh', { method: 'POST', body: {} })
     state.manualRefresh = data.manualRefresh
-    applyResults(data.fixtures, data.overview)
+    applyResults(data.fixtures, { ...data, ...data.overview })
   })().catch(error => { state.error = error.message }).finally(async () => {
     try { await syncManualRefresh() } catch { /* Le serveur reste responsable de la limite. */ }
     state.loading = false; state.refreshing = false; state.lastRefreshWasManual = false; state.refreshSerial++; pending = null

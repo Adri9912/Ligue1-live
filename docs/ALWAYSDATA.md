@@ -76,7 +76,7 @@ Ne pas utiliser `php artisan cache:clear` au déploiement : cela effacerait les 
 
 ## Gestion privée de l’actualisation
 
-Il n’existe pas de compte administrateur dans l’application. Les visiteurs consultent les données actualisées automatiquement, sans bouton d’actualisation générale. Les boutons pour réessayer après une erreur ou poursuivre une recherche de composition restent disponibles et respectent le cache et le budget. Aucun appel HTTP ne peut modifier le mode global. L’ancien `POST /api/control` répond systématiquement 403 et les anciennes valeurs publiques en cache sont ignorées.
+Il n’existe pas de compte administrateur dans l’application. Les visiteurs consultent les données actualisées automatiquement. Un bouton général « Actualiser » autorise 10 clics par jour UTC et par navigateur, sans modifier le mode global. Les boutons pour réessayer après une erreur ou poursuivre une recherche de composition restent disponibles et respectent le cache et le budget. Aucun appel HTTP ne peut modifier le mode global. L’ancien `POST /api/control` répond systématiquement 403 et les anciennes valeurs publiques en cache sont ignorées.
 
 Le propriétaire règle le mode dans le `.env` du serveur par SSH :
 
@@ -87,3 +87,9 @@ FOOTBALL_REFRESH_MODE=auto
 Valeurs autorisées : `auto` (défaut, calendrier quotidien et scores pendant les matchs), `manual` (appels déclenchés par les boutons, toujours sous les limites), `pause` (aucun nouvel appel fournisseur, cache consultable). Après modification, depuis `/home/ligue1-live/www/ligue1-live`, exécuter `php artisan config:cache`. Ne pas effacer le cache sportif ou les quotas.
 
 Pour changer le réglage : se connecter en SSH, lancer `cd ~/www/ligue1-live && nano .env`, ajouter ou modifier cette seule ligne, enregistrer avec Ctrl+O/Entrée et quitter avec Ctrl+X, puis lancer `php artisan config:cache`. Aucun mot de passe ou jeton d’administration n’est envoyé au navigateur. Le club favori, les alertes personnelles et le thème restent propres au navigateur de chaque visiteur.
+
+### Compteur d’actualisation manuelle
+
+`GET /api/refresh` crée un identifiant aléatoire dans un cookie chiffré, HttpOnly et SameSite=Lax, puis renvoie le nombre restant sans appeler les fournisseurs. `POST /api/refresh` vérifie l’origine, le cookie et le mode serveur ; un verrou de cache réserve l’un des 10 clics avant de charger les matchs et le classement avec les délais et budgets habituels. Le compteur est conservé côté serveur et revient à 10 à minuit UTC. Un clic accepté compte aussi en cas d’échec du fournisseur ; aucune remise à zéro des quotas sportifs n’est effectuée.
+
+Ce compteur limite les clics d’un navigateur, pas l’identité d’une personne : sans comptes utilisateurs, effacer les cookies ou changer de navigateur crée un autre identifiant. Le budget quotidien de 90 appels par fournisseur et le cache partagé restent les protections globales. Les onglets d’un même navigateur partagent leur cookie ; le serveur impose la limite même si le compteur d’un autre onglet n’a pas encore été actualisé.

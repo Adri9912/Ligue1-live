@@ -9,6 +9,7 @@ Application web de suivi de la Ligue 1, développée avec **Laravel 13**, Vue 3 
 - Calendrier, résultats et scores actualisés pendant les matchs.
 - Classement avec repères pour les places européennes et la relégation.
 - Club favori, prochains matchs et alertes personnalisées.
+- Actualisation automatique et bouton manuel limité à 10 clics par jour et par navigateur, sous le budget API partagé.
 - Fiches clubs : effectif, joueurs, stade, création et palmarès.
 - Dernières compositions disponibles sur un terrain.
 - Statistiques et événements des matchs selon les données disponibles.

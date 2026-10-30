@@ -5,7 +5,7 @@ export { liveStatuses, finishedStatuses, isLive, isFinished }
 function read(key, fallback) { try { return localStorage.getItem(key) || fallback } catch { return fallback } }
 export const state = reactive({
   mode: null, source: null, season: null, teams: [], standings: [], matches: [], fetchedAt: null, stale: false,
-  refreshMode: 'auto', budget: null, nextRefreshAt: null, controlReady: false, refreshSerial: 0, lastRefreshWasManual: false,
+  refreshMode: 'auto', manualRefresh: null, budget: null, nextRefreshAt: null, controlReady: false, refreshSerial: 0, lastRefreshWasManual: false,
   loading: true, refreshing: false, error: '', favorite: Number(read('l1-favorite', '0')) || null,
   matchView: read('l1-match-view', 'cards') === 'compact' ? 'compact' : 'cards',
   theme: document.documentElement.dataset.theme || 'light', pickerOpen: false, storageError: '',
@@ -23,6 +23,27 @@ export async function api(path, { manual = false, method = 'GET', body } = {}) {
   if (!response.ok) throw new Error(data.error || 'Impossible de charger les données.')
   return data
 }
+export async function syncManualRefresh() {
+  const data = await api('/api/refresh')
+  state.manualRefresh = data.manualRefresh
+}
+function applyResults(fixtures, overview) {
+    Object.assign(state, { teams: overview.teams, standings: overview.standings, matches: fixtures.matches, mode: overview.mode, season: overview.season, fetchedAt: Math.min(overview.fetchedAt, fixtures.fetchedAt), stale: overview.stale || fixtures.stale })
+    observeMatches(fixtures.matches, state.favorite, state.mode, fixtures.stale).catch(() => {})
+}
+export function refreshManually() {
+  if (pending) return pending
+  state.refreshing = true; state.error = ''
+  pending = (async () => {
+    const data = await api('/api/refresh', { method: 'POST', body: {} })
+    state.manualRefresh = data.manualRefresh
+    applyResults(data.fixtures, data.overview)
+  })().catch(error => { state.error = error.message }).finally(async () => {
+    try { await syncManualRefresh() } catch { /* Le serveur reste responsable de la limite. */ }
+    state.loading = false; state.refreshing = false; state.lastRefreshWasManual = false; state.refreshSerial++; pending = null
+  })
+  return pending
+}
 let pending
 export function load({ manual = false } = {}) {
   if (pending) return pending
@@ -31,8 +52,7 @@ export function load({ manual = false } = {}) {
     // Les résultats sont récupérés d’abord pour savoir si le classement doit être mis à jour.
     const fixtures = await api('/api/matches', { manual })
     const overview = await api('/api/overview', { manual })
-    Object.assign(state, { teams: overview.teams, standings: overview.standings, matches: fixtures.matches, mode: overview.mode, season: overview.season, fetchedAt: Math.min(overview.fetchedAt, fixtures.fetchedAt), stale: overview.stale || fixtures.stale })
-    observeMatches(fixtures.matches, state.favorite, state.mode, fixtures.stale).catch(() => {})
+    applyResults(fixtures, overview)
   })().catch(error => { state.error = error.name === 'TimeoutError' ? 'Le chargement a pris trop de temps. Vous pouvez réessayer.' : error.message }).finally(() => { state.loading = false; state.refreshing = false; state.lastRefreshWasManual = manual; state.refreshSerial++; pending = null })
   return pending
 }

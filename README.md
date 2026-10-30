@@ -200,6 +200,14 @@ Branche : `codex/migration-laravel`. Le backend Node et les commandes npm resten
 
 Prérequis : PHP 8.3 ou supérieur (PHP 8.5 utilisé pour ce verrou de dépendances), Composer. Installer avec `composer install`, ajouter `APP_KEY=` dans le fichier privé `.env` puis lancer `php artisan key:generate`. Le cache et les sessions utilisent des fichiers ; aucune base de données n’est nécessaire à ce stade.
 
-Tests PHP : `php artisan test`. Démarrage isolé : `php artisan serve --host=127.0.0.1 --port=8000`. `/up` vérifie le démarrage ; `/` décrit l’état de migration, sans exposer les clés. Le proxy Vue pointe encore vers Node : les routes football ne sont pas encore portées en PHP.
+Tests PHP : `php artisan test`. Démarrage isolé : `php artisan serve --host=127.0.0.1 --port=8000`. `/up` vérifie le démarrage ; `/` décrit l’état de migration, sans exposer les clés. Le proxy Vue pointe encore vers Node : les routes football ne sont pas encore toutes portées en PHP.
 
-Reste à migrer avant toute bascule : transport HTTP des deux fournisseurs, verrous/quota/cache, calendrier et classement, détails des matchs, clubs/profils/compositions, archives et démonstration. Les tests de contrat devront valider les mêmes réponses et protections qu’avec Node. Ne pas déployer cette branche comme une migration terminée.
+Reste à migrer avant toute bascule : détails des matchs, clubs/profils/compositions, archives et démonstration. Le transport, le calendrier et le classement sont décrits ci-dessous et disposent de tests PHP. Les tests de contrat devront valider les mêmes réponses et protections qu’avec Node. Ne pas déployer cette branche comme une migration terminée.
+
+### Avancement du backend Laravel
+
+Les routes `GET /api/status`, `GET /api/matches`, `GET /api/overview` et `POST /api/control` sont portées. Les tests utilisent le client HTTP simulé de Laravel : aucun appel réel ni consommation de quota. Les clés sont transmises dans des en-têtes privés aux domaines fixes des fournisseurs ; les redirections HTTP sont refusées.
+
+Le transport commun sérialise les appels par fournisseur avec un verrou Laravel (cache fichier en local/alwaysdata), espace les demandes, partage le budget UTC et relit le cache après acquisition du verrou. Il conserve les anciennes réponses en cas d’erreur et vérifie le mode après l’attente. Les caches Laravel sont séparés de ceux de Node ; ne pas lancer les deux backends simultanément avec les mêmes clés en production, car leurs compteurs locaux ne sont pas communs.
+
+Les détails des matchs, les clubs, les joueurs, les compositions, les archives et le scénario démo restent à porter. Vue reste donc connecté au backend Node. La migration n’est pas prête pour une bascule ou un déploiement.

@@ -2,7 +2,7 @@
 
 Application web de suivi de la Ligue 1, développée avec **Laravel 13**, Vue 3 et Tailwind CSS. Interface responsive avec thèmes clair et sombre.
 
-[Voir le site](https://calvayrac.alwaysdata.net)
+[Voir le site](https://ligue1-live.alwaysdata.net)
 
 ## Fonctionnalités
 
@@ -49,7 +49,7 @@ npm test
 npm run build
 ```
 
-GitHub Actions lance les tests et la compilation à chaque envoi de code.
+GitHub Actions lance les tests et la compilation à chaque envoi de code. Une fois la clé SSH configurée, les modifications de `main` sont ensuite déployées automatiquement sur alwaysdata.
 
 ## Hébergement
 

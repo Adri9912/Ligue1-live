@@ -1,5 +1,10 @@
 name: Vérifications
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   application:
     runs-on: ubuntu-latest
@@ -12,6 +17,12 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - run: bash tests/deploy.test.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend
+          path: dist/
+          retention-days: 1
 
   laravel:
     runs-on: ubuntu-latest
@@ -24,3 +35,65 @@ jobs:
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: php artisan test
+
+  deploy:
+    name: Déploiement alwaysdata
+    needs: [application, laravel]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: alwaysdata-production
+      cancel-in-progress: false
+    steps:
+      - name: Vérifier la configuration du déploiement
+        id: config
+        env:
+          DEPLOY_KEY: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+        run: |
+          if [ -n "$DEPLOY_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Déploiement désactivé : configurer ALWAYSDATA_SSH_KEY."
+          fi
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.ready == 'true'
+      - uses: actions/download-artifact@v4
+        if: steps.config.outputs.ready == 'true'
+        with:
+          name: frontend
+          path: dist/
+      - name: Configurer la connexion SSH
+        if: steps.config.outputs.ready == 'true'
+        env:
+          DEPLOY_KEY: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/alwaysdata
+          chmod 600 ~/.ssh/alwaysdata
+          ssh-keyscan -T 15 -t ed25519 ssh-ligue1-live.alwaysdata.net > ~/.ssh/alwaysdata_hosts
+          fingerprint=$(ssh-keygen -lf ~/.ssh/alwaysdata_hosts -E sha256 | awk '{print $2}')
+          test "$fingerprint" = 'SHA256:5i/vJYokzNsnXAeHkwzEm+3kxPQWwsRzwXFPQ7oOvNI'
+          cat > ~/.ssh/config <<'SSH'
+          Host alwaysdata-deploy
+            HostName ssh-ligue1-live.alwaysdata.net
+            User ligue1-live
+            IdentityFile ~/.ssh/alwaysdata
+            IdentitiesOnly yes
+            BatchMode yes
+            StrictHostKeyChecking yes
+            UserKnownHostsFile ~/.ssh/alwaysdata_hosts
+          SSH
+      - name: Envoyer et installer la version
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          git archive --format=tar HEAD > "$RUNNER_TEMP/release.tar"
+          tar -rf "$RUNNER_TEMP/release.tar" dist
+          gzip "$RUNNER_TEMP/release.tar"
+          archive=".ligue1-release-${GITHUB_SHA}.tar.gz"
+          scp "$RUNNER_TEMP/release.tar.gz" "alwaysdata-deploy:$archive"
+          ssh alwaysdata-deploy "bash -s -- '$archive'" < scripts/deploy-alwaysdata.sh
+          curl --fail --silent --show-error --retry 3 https://ligue1-live.alwaysdata.net/up > /dev/null
+      - name: Supprimer la clé du runner
+        if: always()
+        run: rm -f ~/.ssh/alwaysdata ~/.ssh/alwaysdata_hosts ~/.ssh/config

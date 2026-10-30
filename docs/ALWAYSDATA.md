@@ -1,11 +1,11 @@
 # Déploiement Laravel sur alwaysdata
 
-La migration utilise désormais **PHP**, pas le type de site Node.js. Documentation de référence : [PHP](https://help.alwaysdata.com/fr/docs/hebergement-web/langages/php/configuration/) et [déploiement Laravel](https://laravel.com/docs/deployment).
+Le site utilise **Laravel et PHP**. Documentation de référence : [PHP](https://help.alwaysdata.com/fr/docs/hebergement-web/langages/php/configuration/) et [déploiement Laravel](https://laravel.com/docs/deployment).
 
 ## Préparer la version
 
 1. Choisir PHP **8.5**, correspondant au verrou Composer actuel. Vérifier l’extension intl et les extensions Laravel avec `composer check-platform-reqs`.
-2. Exécuter les tests JavaScript et PHP, puis `npm ci` et `npm run build`. La compilation peut être faite localement ou sur GitHub Actions ; Node n’est pas nécessaire sur l’hébergement si `dist/` est déjà construit.
+2. Exécuter les tests JavaScript et PHP, puis `npm ci` et `npm run build`. La compilation peut être faite localement ou sur GitHub Actions ; `dist/` peut être envoyé déjà compilé sur l’hébergement.
 3. Envoyer les sources, `dist/` et les ressources publiques dans un dossier dédié, par exemple `/home/COMPTE/www/ligue1-live`. Ne pas envoyer `.git`, `node_modules` ou le `.env` local.
 4. Installer les dépendances PHP avec `composer install --no-dev --prefer-dist --optimize-autoloader`. Ne pas exécuter de migration de base de données : l’application n’en utilise pas.
 
@@ -51,18 +51,28 @@ Vérifier `/up`, `/api/status` et les pages. Une lecture de `/api/status` ne con
 
 ## Mises à jour automatiques
 
-La CI de tests est prête ; le déploiement automatique ne l’est pas encore. Pour le configurer, il faudra le nom du compte alwaysdata, le nom du site et un accès de déploiement autorisé. Les identifiants seront stockés dans les secrets GitHub, jamais dans un fichier versionné ni dans le chat.
+Le workflow `.github/workflows/checks.yml` teste l’interface et Laravel, puis déploie uniquement `main` après leur réussite. Il peut aussi être lancé manuellement via Actions → Vérifications → Run workflow.
 
-Le futur déploiement devra :
+### Activation
 
-- s’exécuter uniquement après réussite des tests de `main` ;
-- compiler Vue et installer les dépendances PHP de production ;
-- vérifier l’identité du serveur SSH ;
-- préserver `.env`, `storage/` et les quotas/cache existants lors des transferts ;
-- actualiser les caches de configuration/routes, puis vérifier `/up` ;
-- conserver une version précédente pour pouvoir revenir en arrière.
+1. Générer une clé SSH ED25519 dédiée au déploiement, sans réutiliser une clé personnelle.
+2. Ajouter sa **clé publique** à l’utilisateur SSH `ligue1-live` dans alwaysdata. Cette autorisation permet à GitHub Actions de mettre à jour le site avec les droits de cet utilisateur ; elle peut être révoquée en retirant cette clé.
+3. Dans GitHub → Settings → Secrets and variables → Actions, ajouter la **clé privée** comme secret `ALWAYSDATA_SSH_KEY`. Ne jamais la mettre dans Git, dans le chat ou dans le README. Les clés football restent uniquement dans le `.env` du serveur.
+4. Lancer le workflow depuis `main` et contrôler le job « Déploiement alwaysdata ». Tant que le secret est absent, le déploiement est désactivé sans faire échouer les tests.
 
-Ne pas utiliser `php artisan cache:clear` dans le déploiement courant : cela effacerait aussi les compteurs du budget football. Ne pas remplacer les dossiers de runtime par une copie vide.
+Cible : `ligue1-live@ssh-ligue1-live.alwaysdata.net`, projet `/home/ligue1-live/www/ligue1-live`, site https://ligue1-live.alwaysdata.net. L’empreinte ED25519 est vérifiée avant toute authentification : `SHA256:5i/vJYokzNsnXAeHkwzEm+3kxPQWwsRzwXFPQ7oOvNI` (comparée à l’administration alwaysdata lors de la configuration). Si alwaysdata change de serveur, vérifier la nouvelle empreinte dans l’administration avant de mettre à jour le workflow.
+
+### Fonctionnement et restauration
+
+Le runner compile Vue et transfère uniquement les fichiers Git et `dist/`. Le script `scripts/deploy-alwaysdata.sh` vérifie PHP/Composer/rsync/flock, verrouille le déploiement, puis sauvegarde la version précédente dans `/home/ligue1-live/.ligue1-live-deploy/previous.tar.gz`, hors du web. Il installe les dépendances de production et reconstruit les caches de configuration et de routes pendant une courte maintenance.
+
+`.env`, `storage/`, le cache sportif, les compteurs de quotas et les réglages restent en place. Aucune génération de clé ni migration de base de données n’est lancée. Les caches privés de configuration ne sont jamais transférés ou sauvegardés avec le code.
+
+Si l’installation ou le contrôle Laravel échoue, le script restaure automatiquement le code et `vendor` précédents, puis reconstruit la configuration et les routes. Si la restauration échoue elle-même, une intervention manuelle est nécessaire. Une vérification HTTP de `/up` suit le déploiement ; une panne réseau à cette dernière étape signale un échec sans restaurer automatiquement le site.
+
+Une seule sauvegarde est conservée pour limiter l’espace disque ; prévoir de la place pour le projet, la sauvegarde compressée et l’archive transférée. Les tests `bash tests/deploy.test.sh` vérifient le transfert, les restaurations et la préservation des secrets/quotas avec des commandes PHP et Composer simulées.
+
+Ne pas utiliser `php artisan cache:clear` au déploiement : cela effacerait les compteurs du budget football.
 
 ## Limite de cette version
 

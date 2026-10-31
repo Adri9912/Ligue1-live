@@ -7,6 +7,7 @@ import Team from './views/Team.vue'
 import Match from './views/Match.vue'
 import Retro from './views/Retro.vue'
 import Clubs from './views/Clubs.vue'
+import Information from './views/Information.vue'
 import './style.css'
 const router = createRouter({
   history: createWebHistory(),
@@ -15,6 +16,8 @@ const router = createRouter({
     { path: '/classement', component: Standings, meta: { title: 'Classement' } },
     { path: '/classement/:kind(buteurs|passeurs)', component: Standings, meta: { title: 'Classement des joueurs' } },
     { path: '/clubs/:id(\\d+)?', component: Clubs, meta: { title: 'Clubs' } },
+    { path: '/a-propos', component: Information, meta: { title: 'À propos', information: true } },
+    { path: '/contact', component: Information, meta: { title: 'Contact', information: true } },
     { path: '/retro', component: Retro, meta: { title: 'Rétro' } },
     { path: '/mon-equipe', component: Team, meta: { title: 'Mon équipe' } },
     { path: '/equipes/:id(\\d+)', component: Team, meta: { title: 'Équipe' } },

@@ -534,3 +534,12 @@
 .contact-pending { background:var(--soft); padding:14px 16px; border-radius:8px; }
 .information-back { margin-top:20px; }
 @media(max-width:600px) { .footer-links { flex-basis:100%; } .information-panel { padding:21px; } .information-panel h2 { font-size:19px; } }
+
+.feature-top { gap:12px; align-items:flex-start; }
+.feature-top>.feature-label { font-size:21px; line-height:1.25; font-weight:750; letter-spacing:-.3px; color:#fff; }
+.feature-top>.feature-live,.feature-top>span:last-child { flex-shrink:0; margin-top:5px; }
+@media(max-width:600px) { .feature-top>.feature-label { font-size:19px; } }
+
+.favorite-crest-button { border:1px solid var(--line); width:40px; height:40px; }
+.header-actions>.theme-button { width:40px; height:40px; }
+@media(max-width:360px) { .header-inner { gap:6px; } .header-actions { gap:4px; } .header-actions>.icon-button,.header-actions .menu-toggle { width:36px; height:36px; } .header-inner .brand { font-size:14px; gap:6px; } }

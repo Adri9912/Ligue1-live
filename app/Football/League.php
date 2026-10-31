@@ -47,6 +47,7 @@ class League
             $page=$this->client->request('fixtures',$this->params(),fn($e)=>Schedule::fixturesFresh(['time'=>$e['time'],'data'=>array_map(self::fixture(...),$e['data'])],Schedule::now(),$manual),$manual);
             $matches=array_map(self::fixture(...),$page['data']);$times[]=$page['fetchedAt'];$stale=$page['stale'];
         }
+        $matches=Clubs::withHomeStadiums($matches);
         usort($matches,fn($a,$b)=>Schedule::timestamp($a['date'])<=>Schedule::timestamp($b['date']));
         Cache::forever($this->summaryKey('matches'),['data'=>$matches,'time'=>min($times)]);
         return ['matches'=>$matches,'fetchedAt'=>min($times),'stale'=>$stale];
@@ -96,7 +97,9 @@ class League
         if($this->client->provider==='highlightly') {
             $result=$this->client->request('matches/'.$id,[],900000,$manual);$body=$result['data'];$match=array_is_list($body)?($body[0]??null):($body['data'][0]??null);
             if(!$match||($match['id']??null)!==$id||($match['league']['id']??null)!==52695||($match['league']['season']??null)!==$this->season)throw new ApiError('Détail de match Highlightly incohérent.');
-            return [...Normalize::highlightlyDetails($match),'fetchedAt'=>$result['fetchedAt'],'stale'=>$result['stale']||$list['stale']];
+            $details=Normalize::highlightlyDetails($match);
+            $details['fixture']=Clubs::withHomeStadiums([$details['fixture']])[0];
+            return [...$details,'fetchedAt'=>$result['fetchedAt'],'stale'=>$result['stale']||$list['stale']];
         }
         $events=$this->client->request('fixtures/events',['fixture'=>$id],900000,$manual);$stats=$this->client->request('fixtures/statistics',['fixture'=>$id],900000,$manual);
         return ['fixture'=>$fixture,'events'=>array_map(fn($e)=>['minute'=>$e['time']['elapsed']??null,'extra'=>$e['time']['extra']??null,'teamId'=>$e['team']['id'],'player'=>$e['player']['name']??'Joueur non renseigné','type'=>$e['type'],'detail'=>$e['detail']],$events['data']),'stats'=>Normalize::apiStats($stats['data'],$fixture),'fetchedAt'=>min($list['fetchedAt'],$events['fetchedAt'],$stats['fetchedAt']),'stale'=>$list['stale']||$events['stale']||$stats['stale']];

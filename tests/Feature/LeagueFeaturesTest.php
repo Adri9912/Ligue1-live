@@ -31,6 +31,42 @@ class LeagueFeaturesTest extends TestCase
         $this->getJson('/api/matches/9999')->assertNotFound();Http::assertSentCount(2);
         $this->assertSame([],Normalize::apiStats([],['home'=>['id'=>1],'away'=>['id'=>2]]));
     }
+    public function test_missing_match_stadium_uses_cached_home_club_without_extra_requests(): void {
+        $key='football:response:api-football:'.hash('sha256','teams?country=France');
+        Cache::forever($key,['time'=>now()->getTimestampMs(),'data'=>[
+            ['team'=>['id'=>85,'name'=>'Paris Saint Germain'],'venue'=>['name'=>'Parc des Princes']],
+            ['team'=>['id'=>80,'name'=>'Lyon'],'venue'=>['name'=>'Groupama Stadium']],
+        ]]);
+        $match=$this->matchRow();
+        Http::fake(['*/matches?*'=>Http::response(['data'=>[$match],'pagination'=>['totalCount'=>1]]),'*/matches/1001'=>Http::response([$match])]);
+        $this->getJson('/api/matches')->assertOk()->assertJsonPath('matches.0.venue','Parc des Princes')->assertJsonPath('matches.0.venueSource','club');
+        $this->getJson('/api/matches/1001')->assertOk()->assertJsonPath('fixture.venue','Parc des Princes')->assertJsonPath('fixture.venueSource','club');
+        Http::assertSentCount(2);
+    }
+    public function test_stadium_fallback_preserves_confirmed_venues_and_rejects_unknown_ambiguous_or_old_clubs(): void {
+        $key='football:response:api-football:'.hash('sha256','teams?country=France');
+        $match=['home'=>['name'=>'Paris FC'],'venue'=>null];
+        $this->assertNull(Clubs::withHomeStadiums([$match])[0]['venue']);
+        $row=['team'=>['id'=>114,'name'=>'Paris FC'],'venue'=>['name'=>'Old stadium']];
+        Cache::forever($key,['time'=>now()->getTimestampMs(),'data'=>[$row]]);
+        $this->assertSame('Stade Jean-Bouin',Clubs::withHomeStadiums([$match])[0]['venue']);
+        Cache::forever($key,['time'=>now()->getTimestampMs(),'data'=>[
+            ['team'=>['id'=>110,'name'=>'Estac Troyes'],'venue'=>['name'=>"Stade de l'Aube"]],
+            ['team'=>['id'=>106,'name'=>'Stade Brestois 29'],'venue'=>['name'=>'Stade Francis-Le Blé']],
+        ]]);
+        foreach(['Estac Troyes'=>"Stade de l'Aube",'Stade Brestois 29'=>'Stade Francis-Le Blé','Brest'=>'Stade Francis-Le Blé'] as $name=>$venue)
+            $this->assertSame($venue,Clubs::withHomeStadiums([['home'=>['name'=>$name],'venue'=>null]])[0]['venue']);
+        Cache::forever($key,['time'=>now()->getTimestampMs(),'data'=>[$row]]);
+        $confirmed=[...$match,'venue'=>'Terrain exceptionnel'];
+        $this->assertSame($confirmed,Clubs::withHomeStadiums([$confirmed])[0]);
+        $unknown=[...$match,'home'=>['name'=>'Unknown']];
+        $this->assertSame($unknown,Clubs::withHomeStadiums([$unknown])[0]);
+        Cache::forever($key,['time'=>now()->getTimestampMs(),'data'=>[$row,$row]]);
+        $this->assertSame($match,Clubs::withHomeStadiums([$match])[0]);
+        Cache::forever($key,['time'=>now()->subDays(31)->getTimestampMs(),'data'=>[$row]]);
+        $this->assertSame($match,Clubs::withHomeStadiums([$match])[0]);
+        Http::assertNothingSent();
+    }
     public function test_api_football_events_and_stats_have_the_same_shape(): void {
         config(['football.provider'=>'api-football']);
         $m=['fixture'=>['id'=>1,'date'=>'2026-10-27T19:00:00Z','status'=>['short'=>'FT']],'teams'=>['home'=>['id'=>1,'name'=>'A'],'away'=>['id'=>2,'name'=>'B']],'goals'=>['home'=>1,'away'=>0],'league'=>['round'=>'Regular Season - 8']];

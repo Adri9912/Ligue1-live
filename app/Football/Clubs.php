@@ -7,7 +7,29 @@ class Clubs
     private const TITLES=[85=>[1986,1994,2013,2014,2015,2016,2018,2019,2020,2022,2023,2024,2025,2026],81=>[1937,1948,1971,1972,1989,1990,1991,1992,2010],91=>[1961,1963,1978,1982,1988,1997,2000,2017],79=>[1946,1954,2011,2021],80=>[2002,2003,2004,2005,2006,2007,2008],84=>[1951,1952,1956,1959],116=>[1998],108=>[1996],95=>[1979],94=>[],114=>[],97=>[],96=>[],106=>[],77=>[],1298=>[],110=>[],111=>[]];
     private const CORRECTIONS=[96=>['founded'=>1970,'source'=>'https://billetterie.om.fr/fr/histoire/adversaires/om-toulouse-fc'],91=>['founded'=>1924,'source'=>'https://www.asmonaco.com/fr/club/histoire/naissance-de-l-as-monaco'],114=>['stadium'=>'Stade Jean-Bouin','source'=>'https://parisfc.fr/club/communique-officiel-29/']];
     public function __construct(public readonly League $league) { $this->client=new ApiClient('api-football'); }
-    private static function name(string $s): string { return preg_replace('/[^a-z0-9]/','',strtolower(Str::ascii($s))); }
+    private static function name(string $s): string {
+        $name=preg_replace('/[^a-z0-9]/','',strtolower(Str::ascii($s)));
+        return ['rennesfc'=>'rennes','lehavreac'=>'lehavre','estactroyes'=>'troyes','stadebrestois29'=>'brest'][$name]??$name;
+    }
+    private static function record(string $name, array $registry): ?array {
+        $name=self::name($name);
+        $matching=array_values(array_filter($registry,fn($r)=>!($r['team']['national']??false)&&self::name($r['team']['name'])===$name));
+        return count($matching)===1?$matching[0]:null;
+    }
+    public static function withHomeStadiums(array $matches): array {
+        // Réutilisation seule : ne déclenche jamais d'appel ni de recherche d'effectif.
+        $cached=(new ApiClient('api-football'))->cached('teams',['country'=>'France']);
+        if(!$cached || Schedule::now()-$cached['time']>=30*86400000)return $matches;
+        return array_map(function($match) use($cached) {
+            if(!empty($match['venue']))return $match;
+            $record=self::record($match['home']['name'],$cached['data']);
+            if(!$record)return $match;
+            $stadium=self::CORRECTIONS[$record['team']['id']]['stadium']??$record['venue']['name']??null;
+            if(!is_string($stadium)||!trim($stadium))return $match;
+            // Le stade habituel n'est pas une confirmation du lieu de cette rencontre.
+            return [...$match,'venue'=>$stadium,'venueSource'=>'club'];
+        },$matches);
+    }
     public static function photo(int $id): ?string { return $id>0?'https://media.api-sports.io/football/players/'.$id.'.png':null; }
     public static function position(string $p): string { return ['Goalkeeper'=>'Gardien','Defender'=>'Défenseur','Midfielder'=>'Milieu','Attacker'=>'Attaquant','Forward'=>'Attaquant'][$p]??'Poste non renseigné'; }
     public static function country(?string $country): ?string
@@ -37,10 +59,9 @@ class Clubs
         if(!$current)throw new ApiError('Club introuvable dans la saison actuelle de Ligue 1.',404);
         if(!$this->client->key())throw new ApiError('La clé API-Football est nécessaire pour les effectifs.',503);
         $registry=$this->client->request('teams',['country'=>'France'],30*86400000,$manual);
-        $name=self::name($current['name']);$name=['rennesfc'=>'rennes','lehavreac'=>'lehavre'][$name]??$name;
-        $matching=array_values(array_filter($registry['data'],fn($r)=>!($r['team']['national']??false)&&self::name($r['team']['name'])===$name));
-        if(count($matching)!==1)throw new ApiError('La correspondance de ce club entre les fournisseurs reste à vérifier.',422);
-        $record=$matching[0];$apiId=$record['team']['id'];$correction=self::CORRECTIONS[$apiId]??[];
+        $record=self::record($current['name'],$registry['data']);
+        if(!$record)throw new ApiError('La correspondance de ce club entre les fournisseurs reste à vérifier.',422);
+        $apiId=$record['team']['id'];$correction=self::CORRECTIONS[$apiId]??[];
         $club=[...League::team($record['team']),'id'=>$id,'founded'=>$correction['founded']??$record['team']['founded']??null,'stadium'=>$correction['stadium']??$record['venue']['name']??null,'city'=>$record['venue']['city']??null,'correctionSource'=>$correction['source']??null];
         $squad=[];$error='';$status=null;$time=$registry['fetchedAt'];$stale=$registry['stale'];
         try {

@@ -22,9 +22,15 @@ class ApiClient
         $used = ($q['day']??null) === $date ? ($q['used']??0) : 0;
         return ['used'=>$used, 'limit'=>config('football.daily_limit'), 'remaining'=>max(0,config('football.daily_limit')-$used), 'resetAt'=>(int) now()->utc()->addDay()->startOfDay()->getTimestampMs(), 'providerRemaining'=>($q['day']??null)===$date ? ($q['providerRemaining']??null) : null, 'observedAt'=>($q['day']??null)===$date ? ($q['observedAt']??null) : null];
     }
+    private function responseKey(string $path, array $params): string {
+        return 'football:response:'.$this->provider.':'.hash('sha256', $path.'?'.http_build_query($params));
+    }
+    public function cached(string $path, array $params): ?array {
+        return Cache::get($this->responseKey($path,$params));
+    }
     public function request(string $path, array $params, int|callable $fresh, bool $manual = false, ?string $signature = null): array
     {
-        $cacheKey = 'football:response:'.$this->provider.':'.hash('sha256', $path.'?'.http_build_query($params));
+        $cacheKey = $this->responseKey($path,$params);
         $valid = fn ($e) => is_callable($fresh) ? $fresh($e) : Schedule::now()-$e['time'] < $fresh;
         $result = fn ($e, $stale) => ['data'=>$e['data'], 'fetchedAt'=>$e['time'], 'stale'=>$stale, 'signature'=>$e['signature']??null];
         $cached = Cache::get($cacheKey);

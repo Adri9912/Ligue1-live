@@ -483,3 +483,11 @@
 
 .league-header-mark { display:inline-block; width:24px; height:31px; flex:0 0 24px; background:var(--ink); mask:url('/images/ligue1-logo.png') center / contain no-repeat; }
 @media(max-width:600px) { .league-header-mark { width:19px; height:25px; flex-basis:19px; } }
+
+/* Match du jour : date et critères lisibles sur les deux thèmes. */
+.feature-date { color:#d1dbe8; font-size:11px; margin-top:12px; }
+.feature-reason { color:#d1dbe8; font-size:12px; padding:0 0 16px; line-height:1.6; }
+.feature-reason strong { display:block; color:#fff; margin-bottom:3px; }
+.feature-empty>p { margin:18px 0; color:#d1dbe8; font-size:12px; }
+#rencontres { scroll-margin-top:20px; }
+@media(max-width:600px) { .feature-date { font-size:11px; margin-top:10px; } .feature-reason { font-size:12px; padding-bottom:12px; } }

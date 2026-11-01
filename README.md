@@ -61,3 +61,12 @@ Le site est hébergé sur alwaysdata. La racine web pointe vers `public/` afin d
 La disponibilité et la fréquence des données dépendent des API et de leurs quotas. Les meilleurs buteurs et passeurs de la saison actuelle restent à venir. Les notifications nécessitent un onglet ouvert et, pour les notifications système, l’autorisation du navigateur.
 
 Projet indépendant, sans affiliation avec la LFP ou les clubs. Les marques et logos appartiennent à leurs propriétaires. Logo Ligue 1 : [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ligue_1_2024_Logo.png). Palmarès : [Ligue 1](https://ligue1.com/en/articles/l1_article_289-le-palmares-des-champions-de-ligue-1).
+
+
+### Introduction cinématique
+
+L’introduction validée est intégrée au démarrage de Vue : quatre secondes en plein écran, puis la page demandée apparaît, y compris pour un lien direct vers un match ou le classement. La page et ses données se chargent en parallèle. « Passer » ou la touche Échap terminent immédiatement l’introduction ; le focus revient au contenu. Le défilement et les interactions derrière l’introduction sont bloqués pendant sa lecture. Le réglage système « réduire les animations » remplace le mouvement et l’éclair par un fondu du logo.
+
+La clé `l1-intro-last-shown-v1` dans `localStorage` mémorise le début de lecture pour **30 minutes**, même lorsque l’utilisateur passe l’animation. Les actualisations, changements de page et nouveaux onglets du même site n’entraînent pas de nouvelle lecture pendant ce délai. Les visites ne prolongent pas ce délai. Web Locks sérialise les ouvertures simultanées lorsque le navigateur le permet. La mémorisation reste propre au navigateur, au profil et à l’origine (protocole, domaine, port) ; si le stockage est bloqué, l’intro peut se rejouer à chaque chargement mais n’empêche jamais l’accès.
+
+Le composant `src/components/IntroAnimation.vue` contient les styles isolés et réutilise l’icône ballon de l’application. Le rendu du ballon est dans `src/intro/ball.mjs` et la règle des 30 minutes dans `src/intro-session.mjs`, couverte par `tests/intro-session.test.mjs`. Aucun changement au backend ni aux fournisseurs de données. Le push sur une branche de travail ne déploie pas cette fonctionnalité ; le workflow existant déploie uniquement depuis `main`.

@@ -9,6 +9,7 @@ import Retro from './views/Retro.vue'
 import Clubs from './views/Clubs.vue'
 import Information from './views/Information.vue'
 import './style.css'
+import { claimIntro } from './intro-session.mjs'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -27,4 +28,17 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 }),
 })
 router.afterEach(to => { document.title = `${to.meta.title} · Ligue 1 Live` })
-createApp(App).use(router).mount('#app')
+function reserveIntro() {
+  try { return claimIntro(window.localStorage) } catch { return true }
+}
+// Web Locks serialize simultaneous openings on this origin when supported.
+async function mountApp() {
+  let showIntro
+  try {
+    showIntro = navigator.locks
+      ? await navigator.locks.request('l1-intro', reserveIntro)
+      : reserveIntro()
+  } catch { showIntro = reserveIntro() }
+  createApp(App, { showIntro }).use(router).mount('#app')
+}
+mountApp()

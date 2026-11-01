@@ -1,14 +1,21 @@
 <script setup>
-import { onMounted, onUnmounted, computed } from 'vue'
+import { onMounted, onUnmounted, computed, ref, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { state, load, syncStatus, favoriteTeam, toggleTheme } from './state'
 import Icon from './components/Icon.vue'
-import Badge from './components/Badge.vue'
 import TeamPicker from './components/TeamPicker.vue'
 import AlertToasts from './components/AlertToasts.vue'
 import { alerts } from './notifications'
 import DataControls from './components/DataControls.vue'
 import NavigationMenu from './components/NavigationMenu.vue'
+import IntroAnimation from './components/IntroAnimation.vue'
+const props = defineProps({ showIntro: Boolean })
+const introVisible = ref(props.showIntro)
+async function finishIntro() {
+  introVisible.value = false
+  await nextTick()
+  document.getElementById('main')?.focus({ preventScroll: true })
+}
 const route = useRoute()
 const isInformation = computed(() => route.meta.information === true)
 const isRetro = computed(() => route.path === '/retro')
@@ -37,8 +44,10 @@ onMounted(async () => {
 onUnmounted(() => clearInterval(interval))
 </script>
 <template>
+  <IntroAnimation v-if="introVisible" @finish="finishIntro" />
+  <div :inert="introVisible" :aria-hidden="introVisible || undefined">
   <a class="skip-link" href="#main">Aller au contenu</a>
-  <header class="site-header"><div class="header-inner"><RouterLink to="/" class="brand" aria-label="Ligue 1 Live, accueil"><span class="brand-symbol"><Icon name="ball" :size="27" /></span><span>LIGUE 1 <b>LIVE<span class="brand-dot">.</span></b></span></RouterLink><nav class="desktop-nav" aria-label="Navigation principale"><RouterLink v-for="link in primaryLinks" :key="link.to" :to="link.to" :class="{ active: link.to === '/' ? route.path === '/' || route.path.startsWith('/matchs/') : (link.to === '/classement' ? route.path.startsWith('/classement') : route.path === link.to || link.to === '/clubs' && isClubs) }"><Icon :name="link.icon" :size="18" />{{ link.label }}</RouterLink></nav><div class="header-actions"><span class="season-pill">{{ isRetro ? 'LES ARCHIVES' : `SAISON ${seasonLabel}` }}</span><button v-if="favoriteTeam" class="icon-button favorite-crest-button" :aria-label="`Changer mon équipe favorite : ${favoriteTeam.name}`" :title="`Mon club : ${favoriteTeam.name} · Changer de club`" @click="state.pickerOpen = true"><Badge :team="favoriteTeam" size="tiny" /></button><button class="icon-button theme-button" :aria-label="state.theme === 'dark' ? 'Activer le mode clair' : 'Activer le mode sombre'" :title="state.theme === 'dark' ? 'Passer au mode clair' : 'Passer au mode sombre'" @click="toggleTheme"><Icon :name="state.theme === 'dark' ? 'sun' : 'moon'" /></button><NavigationMenu :links="links" /></div></div></header>
+  <header class="site-header"><div class="header-inner"><RouterLink to="/" class="brand" aria-label="Ligue 1 Live, accueil"><span class="brand-symbol"><Icon name="ball" :size="27" /></span><span>LIGUE 1 <b>LIVE<span class="brand-dot">.</span></b></span></RouterLink><nav class="desktop-nav" aria-label="Navigation principale"><RouterLink v-for="link in primaryLinks" :key="link.to" :to="link.to" :class="{ active: link.to === '/' ? route.path === '/' || route.path.startsWith('/matchs/') : (link.to === '/classement' ? route.path.startsWith('/classement') : route.path === link.to || link.to === '/clubs' && isClubs) }"><Icon :name="link.icon" :size="18" />{{ link.label }}</RouterLink></nav><div class="header-actions"><span class="season-pill">{{ isRetro ? 'LES ARCHIVES' : `SAISON ${seasonLabel}` }}</span><button v-if="favoriteTeam" class="icon-button favorite-crest-button" :aria-label="`Changer mon équipe favorite : ${favoriteTeam.name}`" :title="`Mon club : ${favoriteTeam.name} · Changer de club`" @click="state.pickerOpen = true"><img v-if="favoriteTeam.logo" :src="favoriteTeam.logo" alt="" /><Icon v-else name="heart" :size="24" /></button><button class="icon-button theme-button" :aria-label="state.theme === 'dark' ? 'Activer le mode clair' : 'Activer le mode sombre'" :title="state.theme === 'dark' ? 'Passer au mode clair' : 'Passer au mode sombre'" @click="toggleTheme"><Icon :name="state.theme === 'dark' ? 'sun' : 'moon'" /></button><NavigationMenu :links="links" /></div></div></header>
   <main id="main" class="shell" tabindex="-1">
     <div v-if="state.mode === 'demo' && !isRetro && !isInformation" class="demo-notice"><span class="notice-icon"><Icon name="info" :size="16" /></span><p><strong>Mode démonstration</strong><span> · Scores, joueurs et classement fictifs. Le scénario en direct est figé.</span></p><span class="demo-tag">DÉMO</span></div>
     <DataControls v-if="!isRetro && !isClubs && !isInformation" />
@@ -51,4 +60,5 @@ onUnmounted(() => clearInterval(interval))
   </main>
   <nav class="mobile-nav" aria-label="Navigation mobile"><RouterLink v-for="link in primaryLinks" :key="link.to" :to="link.to" :class="{ active: link.to === '/' ? route.path === '/' || route.path.startsWith('/matchs/') : (link.to === '/classement' ? route.path.startsWith('/classement') : route.path === link.to || link.to === '/clubs' && isClubs) }"><Icon :name="link.icon" :size="21" /><span>{{ link.label }}</span></RouterLink></nav>
   <TeamPicker /><AlertToasts />
+  </div>
 </template>

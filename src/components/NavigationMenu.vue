@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { state, favoriteTeam, toggleTheme } from '../state'
+import { state, favoriteTeam, setTheme } from '../state'
 import Icon from './Icon.vue'
 import Badge from './Badge.vue'
 
@@ -28,7 +28,7 @@ function outside(event) {
 }
 function trapTab(event) {
   if (event.key !== 'Tab') return
-  const controls = [...dialog.value.querySelectorAll('a[href], button:not(:disabled)')]
+  const controls = [...dialog.value.querySelectorAll('a[href], button:not(:disabled), select:not(:disabled)')]
   const first = controls[0], last = controls.at(-1)
   if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
@@ -46,7 +46,7 @@ onUnmounted(closed)
     <div class="navigation-menu-content">
       <div class="navigation-menu-heading"><div><span class="eyebrow">LIGUE 1 LIVE</span><h2 id="navigation-menu-title">Votre terrain de jeu<span class="heading-dot">.</span></h2></div><button class="icon-button" aria-label="Fermer le menu" autofocus @click="close"><Icon name="close" /></button></div>
       <nav class="drawer-links" aria-label="Rubriques du site"><RouterLink v-for="link in links" :key="link.to" :to="link.to" :class="{ 'drawer-link-active': active(link.to) }" :aria-current="active(link.to) ? 'page' : undefined" @click="close"><Icon :name="link.icon" :size="21" /><span>{{ link.label }}</span><Icon name="arrow" :size="16" /></RouterLink></nav>
-      <section class="drawer-preferences" aria-labelledby="drawer-preferences-title"><h3 id="drawer-preferences-title">Réglages</h3><button class="drawer-preference" :disabled="!state.teams.length" @click="chooseClub"><Badge v-if="favoriteTeam" :team="favoriteTeam" size="tiny" /><Icon v-else name="heart" /><span><strong>{{ favoriteTeam ? favoriteTeam.name : 'Choisir mon club' }}</strong><small>{{ favoriteTeam ? 'Changer mon équipe favorite' : 'Retrouver mon équipe facilement' }}</small></span><Icon name="arrow" :size="16" /></button><button class="drawer-preference" @click="toggleTheme"><Icon :name="state.theme === 'dark' ? 'sun' : 'moon'" /><span><strong>{{ state.theme === 'dark' ? 'Passer au thème clair' : 'Passer au thème sombre' }}</strong><small>Choix mémorisé sur ce navigateur</small></span></button></section>
+      <section class="drawer-preferences" aria-labelledby="drawer-preferences-title"><h3 id="drawer-preferences-title">Réglages</h3><button class="drawer-preference" :disabled="!state.teams.length" @click="chooseClub"><Badge v-if="favoriteTeam" :team="favoriteTeam" size="tiny" /><Icon v-else name="heart" /><span><strong>{{ favoriteTeam ? favoriteTeam.name : 'Choisir mon club' }}</strong><small>{{ favoriteTeam ? 'Changer mon équipe favorite' : 'Retrouver mon équipe facilement' }}</small></span><Icon name="arrow" :size="16" /></button><label class="drawer-theme"><span>Thème du site</span><select :value="state.themePreference" @change="setTheme($event.target.value)"><option value="auto">Automatique · 8 h – 18 h</option><option value="light">Jour</option><option value="dark">Nuit</option></select><small>Automatique : jour de 8 h à 18 h, nuit le reste du temps. Heure de votre appareil.</small></label></section>
       <p class="drawer-footer">Une seule compétition. Toute votre passion.</p>
     </div>
   </dialog>

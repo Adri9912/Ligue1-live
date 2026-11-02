@@ -28,3 +28,11 @@ export function previousMeetings(matches, fixture, limit = 5) {
   const before = Math.min(Date.now(), Date.parse(fixture.date))
   return recentTeamResults(matches.filter(match => match.id !== fixture.id && [match.home.id, match.away.id].includes(fixture.away.id)), fixture.home.id, { before, limit })
 }
+
+export function filterRoundMatches(matches, { round, teamId = 0, status = 'all' }) {
+  return matches.filter(match => match.round === Number(round)
+    && (!Number(teamId) || [match.home.id, match.away.id].includes(Number(teamId)))
+    && (status === 'all' || status === 'live' && isLive(match) || status === 'finished' && isFinished(match)
+      || status === 'upcoming' && ['NS', 'TBD', 'PST'].includes(match.status)))
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date) || a.id - b.id)
+}

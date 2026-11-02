@@ -51,3 +51,10 @@ export function matchAlerts(previous, current, favoriteId, settings) {
   }
   return alerts
 }
+
+export function clubRanking(rows, kind, limit = 3) {
+  const field = kind === 'attack' ? 'goalsFor' : 'goalsAgainst'
+  return rows.filter(row => row.played > 0 && Number.isInteger(row[field]) && row[field] >= 0)
+    .slice().sort((a,b) => (kind === 'attack' ? b[field] - a[field] : a[field] - b[field]) || a.rank - b.rank)
+    .slice(0,limit)
+}

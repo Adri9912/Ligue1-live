@@ -5,6 +5,7 @@ import { state, day, time, isLive, api } from '../state'
 import { provisionalStandings } from '../football'
 import StandingsTable from '../components/StandingsTable.vue'
 import Badge from '../components/Badge.vue'
+import ClubLeaders from '../components/ClubLeaders.vue'
 import Icon from '../components/Icon.vue'
 const route = useRoute(), projection = ref(true)
 const kind = computed(() => route.params.kind || 'equipes')
@@ -53,6 +54,7 @@ const zones = [
     <p v-if="projected" class="projection-note"><Icon name="info" :size="15" />Simulation si les scores actuels devenaient définitifs, calculée à partir des matchs reçus. Elle ne tient pas compte des éventuelles sanctions administratives ou des départages avancés. Le classement publié reste la référence.</p>
     <div class="table-explainer"><span><b>MJ</b> Matchs joués</span><span><b>V / N / D</b> Victoires / Nuls / Défaites</span><span><b>BP / BC</b> Buts pour / contre</span><span><b>Diff.</b> Différence de buts</span><span v-if="projected"><b>↗ / ↘</b> Évolution par rapport au classement publié</span></div>
     <p class="update-note"><Icon name="info" :size="14" />{{ state.mode === 'demo' ? 'Ce classement illustre l’interface et ne représente pas la saison réelle.' : `Dernières données reçues : ${day(state.fetchedAt)} à ${time(state.fetchedAt)}. Actualisation selon le mode choisi et le quota disponible.` }}</p>
+    <div class="club-leaders-grid"><ClubLeaders kind="attack" /><ClubLeaders kind="defense" /></div><RouterLink to="/statistiques" class="text-button">Toutes les statistiques <Icon name="arrow" :size="16" /></RouterLink>
   </template>
   <section v-else class="panel players-panel"><div class="panel-title"><div class="flex items-center gap-3"><span class="player-heading-icon"><Icon :name="scorerTab ? 'ball' : 'assist'" :size="22" /></span><div><h2>{{ scorerTab ? 'Meilleurs buteurs' : 'Meilleurs passeurs' }}</h2><p class="muted small-text">Ligue 1 · Saison {{ state.season }}–{{ state.season + 1 }}</p></div></div><span class="data-pill">{{ playerMeta?.unavailable ? 'À VENIR' : state.mode === 'demo' ? 'JOUEURS FICTIFS' : 'SAISON EN COURS' }}</span></div>
     <div v-if="loading" class="loading-state" role="status"><span class="loader"></span><p>Chargement des joueurs…</p></div>

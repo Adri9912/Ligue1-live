@@ -16,3 +16,21 @@ test('confrontations : deux clubs exacts, aller/retour, uniquement avant la renc
  assert.deepEqual(previousMeetings(games,fixture).map(r=>r.match.id),[2,1])
  assert.deepEqual(previousMeetings(games,game(51,'invalid','NS',null,null)),[])
 })
+
+test('filtres : journée, domicile/extérieur, statut et remise à zéro sans modifier les données', async () => {
+ const { filterRoundMatches } = await import('../src/teamMatches.js')
+ const games = [
+  {...game(1,'2024-10-01','FT',2,0),round:1},
+  {...game(2,'2024-10-02','NS',null,null,other,home),round:1},
+  {...game(3,'2024-10-03','1H',1,0,other,away),round:1},
+  {...game(4,'2024-10-04','PST',null,null),round:2},
+ ]
+ const original = JSON.stringify(games)
+ assert.deepEqual(filterRoundMatches(games,{round:'1',teamId:'1'}).map(m=>m.id),[1,2])
+ assert.deepEqual(filterRoundMatches(games,{round:1,teamId:1,status:'finished'}).map(m=>m.id),[1])
+ assert.deepEqual(filterRoundMatches(games,{round:1,teamId:1,status:'live'}),[])
+ assert.deepEqual(filterRoundMatches(games,{round:1,status:'live'}).map(m=>m.id),[3])
+ assert.deepEqual(filterRoundMatches(games,{round:2,status:'upcoming'}).map(m=>m.id),[4])
+ assert.deepEqual(filterRoundMatches(games,{round:1,teamId:'',status:'all'}).map(m=>m.id),[1,2,3])
+ assert.equal(JSON.stringify(games),original)
+})

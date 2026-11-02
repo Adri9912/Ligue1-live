@@ -8,6 +8,7 @@ import Match from './views/Match.vue'
 import Retro from './views/Retro.vue'
 import Clubs from './views/Clubs.vue'
 import Information from './views/Information.vue'
+import Statistics from './views/Statistics.vue'
 import './style.css'
 import { claimIntro } from './intro-session.mjs'
 const router = createRouter({
@@ -19,6 +20,7 @@ const router = createRouter({
     { path: '/clubs/:id(\\d+)?', component: Clubs, meta: { title: 'Clubs' } },
     { path: '/a-propos', component: Information, meta: { title: 'À propos', information: true } },
     { path: '/contact', component: Information, meta: { title: 'Contact', information: true } },
+    { path: '/statistiques', component: Statistics, meta: { title: 'Statistiques' } },
     { path: '/retro', component: Retro, meta: { title: 'Rétro' } },
     { path: '/mon-equipe', component: Team, meta: { title: 'Mon équipe' } },
     { path: '/equipes/:id(\\d+)', component: Team, meta: { title: 'Équipe' } },

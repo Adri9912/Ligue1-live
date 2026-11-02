@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, computed, ref, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import { state, load, syncStatus, favoriteTeam, toggleTheme } from './state'
+import { state, load, syncStatus, favoriteTeam, toggleTheme, syncTheme } from './state'
 import Icon from './components/Icon.vue'
 import TeamPicker from './components/TeamPicker.vue'
 import AlertToasts from './components/AlertToasts.vue'
@@ -20,12 +20,13 @@ const route = useRoute()
 const isInformation = computed(() => route.meta.information === true)
 const isRetro = computed(() => route.path === '/retro')
 const isClubs = computed(() => route.path.startsWith('/clubs'))
-const links = [{ to: '/', label: 'Matchs', icon: 'matches' }, { to: '/classement', label: 'Classement', icon: 'table' }, { to: '/clubs', label: 'Clubs', icon: 'ball' }, { to: '/mon-equipe', label: 'Mon équipe', icon: 'heart' }, { to: '/retro', label: 'Rétro', icon: 'clock' }]
-const primaryLinks = links.filter(link => link.to !== '/retro')
+const links = [{ to: '/', label: 'Matchs', icon: 'matches' }, { to: '/classement', label: 'Classement', icon: 'table' }, { to: '/clubs', label: 'Clubs', icon: 'ball' }, { to: '/mon-equipe', label: 'Mon équipe', icon: 'heart' }, { to: '/statistiques', label: 'Statistiques', icon: 'table' }, { to: '/retro', label: 'Rétro', icon: 'clock' }]
+const primaryLinks = links.filter(link => !['/retro', '/statistiques'].includes(link.to))
 const seasonLabel = computed(() => state.season ? `${state.season} / ${String(state.season + 1).slice(-2)}` : 'Ligue 1')
 let interval
 let lastAutomaticAttempt = 0, checking = false
 async function checkUpdates() {
+  syncTheme()
   if (checking) return
   checking = true
   try {
@@ -37,11 +38,13 @@ async function checkUpdates() {
   finally { checking = false }
 }
 onMounted(async () => {
+  syncTheme()
+  document.addEventListener('visibilitychange', syncTheme)
   try { await syncStatus() } catch (error) { state.error = error.message }
   lastAutomaticAttempt = Date.now(); await load()
   interval = setInterval(checkUpdates, 60000)
 })
-onUnmounted(() => clearInterval(interval))
+onUnmounted(() => { clearInterval(interval); document.removeEventListener('visibilitychange', syncTheme) })
 </script>
 <template>
   <IntroAnimation v-if="introVisible" @finish="finishIntro" />

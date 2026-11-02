@@ -31,6 +31,22 @@ class MatchLineupsTest extends TestCase
         $this->getJson('/api/matches/1001/lineups')->assertOk();
         Http::assertSentCount(3); // Calendrier renouvelé, pas les compositions complètes.
     }
+    public function test_portraits_reuse_only_unambiguous_cached_rosters_without_new_requests(): void {
+        $this->fake(['homeTeam'=>$this->teamLineup(1),'awayTeam'=>$this->teamLineup(2)]);
+        $cache=function($path,$params,$data) {
+            Cache::forever('football:response:api-football:'.hash('sha256',$path.'?'.http_build_query($params)),['time'=>now()->getTimestampMs(),'data'=>$data]);
+        };
+        // Les identifiants du registre API-Football diffèrent de ceux du match Highlightly.
+        $cache('teams',['country'=>'France'],[['team'=>['id'=>85,'name'=>'A']],['team'=>['id'=>86,'name'=>'B']]]);
+        $this->getJson('/api/matches/1001/lineups')->assertOk()->assertJsonCount(0,'squads.home');
+        $cache('players/squads',['team'=>85],[['team'=>['id'=>85],'players'=>[['id'=>9001,'name'=>'Player 1-1','number'=>1,'position'=>'Goalkeeper']]]]);
+        $this->getJson('/api/matches/1001/lineups')->assertOk()->assertJsonPath('squads.home.0.photo','https://media.api-sports.io/football/players/9001.png')->assertJsonCount(0,'squads.away');
+        $cache('players/squads',['team'=>85],[['team'=>['id'=>999],'players'=>[['id'=>9001,'name'=>'Player 1-1']]]]);
+        $this->getJson('/api/matches/1001/lineups')->assertOk()->assertJsonCount(0,'squads.home');
+        $cache('teams',['country'=>'France'],[['team'=>['id'=>85,'name'=>'A']],['team'=>['id'=>999,'name'=>'A']]]);
+        $this->getJson('/api/matches/1001/lineups')->assertOk()->assertJsonCount(0,'squads.home');
+        Http::assertSentCount(2); // Un calendrier et une composition : aucune recherche d’effectif.
+    }
     public function test_missing_lineups_are_cached_for_fifteen_minutes_then_can_appear(): void {
         $complete=false;
         $this->fake(function()use(&$complete){return Http::response($complete?['homeTeam'=>$this->teamLineup(1),'awayTeam'=>$this->teamLineup(2)]:[]);});

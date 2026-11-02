@@ -130,7 +130,7 @@ class League
         $root=array_is_list($r['data'])?($r['data'][0]??[]):$r['data'];
         foreach(['homeTeam'=>$homeId,'awayTeam'=>$awayId] as $side=>$expected)if(isset($root[$side]['id'])&&$root[$side]['id']!==$expected)throw new ApiError('Composition reçue pour une autre équipe.',502);
         $home=Normalize::lineup($r['data'],$homeId);$away=Normalize::lineup($r['data'],$awayId);
-        return ['fixture'=>$fixture,'lineups'=>['home'=>$home,'away'=>$away],'fetchedAt'=>$r['fetchedAt'],'stale'=>$r['stale']||$list['stale'],
+        return ['fixture'=>$fixture,'lineups'=>['home'=>$home,'away'=>$away],'squads'=>['home'=>Clubs::cachedSquad($fixture['home']),'away'=>Clubs::cachedSquad($fixture['away'])],'fetchedAt'=>$r['fetchedAt'],'stale'=>$r['stale']||$list['stale'],
             'nextLookupAt'=>$home&&$away?null:max(Schedule::now()+60000,$r['fetchedAt']+900000)];
     }
     public function lineup(int $clubId,int $offset=0,bool $manual=false): array

@@ -2,10 +2,10 @@
 import { state, isLive, isFinished, statusLabel, day, dateKey } from '../state'
 import Badge from './Badge.vue'
 import Icon from './Icon.vue'
-defineProps({ match: { type: Object, required: true }, showDate: Boolean, archive: Boolean, compact: Boolean, horizontal: Boolean })
+defineProps({ match: { type: Object, required: true }, showDate: Boolean, archive: Boolean, horizontal: Boolean })
 </script>
 <template>
-  <component :is="archive ? 'article' : 'RouterLink'" :to="archive ? undefined : `/matchs/${match.id}`" class="match-card" :class="{ 'live-card': isLive(match), 'compact-match': compact, 'home-match-card': horizontal }">
+  <component :is="archive ? 'article' : 'RouterLink'" :to="archive ? undefined : `/matchs/${match.id}`" class="match-card" :class="{ 'live-card': isLive(match), 'home-match-card': horizontal }">
     <div v-if="horizontal" class="fixture-row">
       <span class="row-status" :class="{ 'score-live': isLive(match) }"><span v-if="isLive(match)" class="live-dot" role="img" aria-label="Match en cours"></span>{{ statusLabel(match) }}</span>
       <span class="row-team"><Badge :team="match.home" size="small" /><span>{{ match.home.name }}</span></span>

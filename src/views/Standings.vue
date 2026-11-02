@@ -9,7 +9,8 @@ import ClubLeaders from '../components/ClubLeaders.vue'
 import Icon from '../components/Icon.vue'
 const route = useRoute(), projection = ref(true)
 const kind = computed(() => route.params.kind || 'equipes')
-const isPlayers = computed(() => kind.value !== 'equipes')
+const isPlayers = computed(() => ['buteurs', 'passeurs'].includes(kind.value))
+const isTeamMetric = computed(() => ['attaques', 'defenses'].includes(kind.value))
 const scorerTab = computed(() => kind.value === 'buteurs')
 const liveMatches = computed(() => state.matches.filter(isLive))
 const projected = computed(() => projection.value && liveMatches.value.length > 0)
@@ -22,7 +23,7 @@ let version = 0
 async function loadPlayers(force = false, manual = false) {
   const tab = kind.value, requestVersion = ++version
   error.value = ''
-  if (tab === 'equipes') { loading.value = false; return }
+  if (!isPlayers.value) { loading.value = false; return }
   if (playerCache[tab] && !force) { loading.value = false; return }
   loading.value = true
   try {
@@ -43,8 +44,8 @@ const zones = [
 </script>
 <template>
   <div class="page-heading"><span class="eyebrow">CHAQUE POINT COMPTE</span><h1>Le classement<span class="heading-dot">.</span></h1><p>Les équipes, les buteurs et les passeurs qui font le championnat.</p></div>
-  <nav class="standings-subnav" aria-label="Classements de Ligue 1"><RouterLink to="/classement" :class="{ active: !isPlayers }"><Icon name="table" :size="16" />Équipes</RouterLink><RouterLink to="/classement/buteurs" :class="{ active: kind === 'buteurs' }"><Icon name="ball" :size="16" />Buteurs</RouterLink><RouterLink to="/classement/passeurs" :class="{ active: kind === 'passeurs' }"><Icon name="assist" :size="16" />Passeurs</RouterLink></nav>
-  <template v-if="!isPlayers">
+  <nav class="standings-subnav ranking-tabs" aria-label="Classements de Ligue 1"><RouterLink to="/classement" :class="{ active: kind === 'equipes' }"><Icon name="table" :size="16" />Classement</RouterLink><RouterLink to="/classement/attaques" :class="{ active: kind === 'attaques' }">Meilleures attaques</RouterLink><RouterLink to="/classement/defenses" :class="{ active: kind === 'defenses' }">Meilleures défenses</RouterLink><RouterLink to="/classement/buteurs" :class="{ active: kind === 'buteurs' }"><Icon name="ball" :size="16" />Buteurs</RouterLink><RouterLink to="/classement/passeurs" :class="{ active: kind === 'passeurs' }"><Icon name="assist" :size="16" />Passeurs</RouterLink></nav>
+  <template v-if="!isPlayers && !isTeamMetric">
     <section class="panel"><div class="panel-title"><div class="flex items-center gap-3"><span class="league-mark dark-mark">L1</span><div><h2>Ligue 1</h2><p class="muted small-text">Saison {{ state.season }}–{{ state.season + 1 }} · {{ rows.length }} équipes</p></div></div><span v-if="projected" class="ranking-live"><span class="live-dot"></span>{{ state.mode === 'demo' ? 'DIRECT SIMULÉ' : 'PROVISOIRE' }}</span><span v-else class="data-pill">{{ state.mode === 'demo' ? 'CLASSEMENT FICTIF' : 'CLASSEMENT PUBLIÉ' }}</span></div>
       <div v-if="liveMatches.length" class="projection-toolbar"><div><strong>{{ liveMatches.length }} match{{ liveMatches.length > 1 ? 's' : '' }} en cours</strong><p>Projection selon les derniers scores reçus.</p></div><div class="segmented" role="group" aria-label="Type de classement"><button :class="{ active: projection }" :aria-pressed="projection" @click="projection = true">En direct</button><button :class="{ active: !projection }" :aria-pressed="!projection" @click="projection = false">{{ state.mode === 'demo' ? 'Hors direct' : 'Publié' }}</button></div></div>
       <p class="table-hint">Faites glisser le tableau pour voir toutes les statistiques.</p><StandingsTable :rows="rows" :provisional="projected" /><div v-if="!rows.length" class="empty"><p>Le classement de cette saison n’est pas encore disponible.</p></div>
@@ -56,6 +57,7 @@ const zones = [
     <p class="update-note"><Icon name="info" :size="14" />{{ state.mode === 'demo' ? 'Ce classement illustre l’interface et ne représente pas la saison réelle.' : `Dernières données reçues : ${day(state.fetchedAt)} à ${time(state.fetchedAt)}. Actualisation selon le mode choisi et le quota disponible.` }}</p>
     <div class="club-leaders-grid"><ClubLeaders kind="attack" /><ClubLeaders kind="defense" /></div><RouterLink to="/statistiques" class="text-button">Toutes les statistiques <Icon name="arrow" :size="16" /></RouterLink>
   </template>
+  <section v-else-if="isTeamMetric" class="team-metric-ranking"><ClubLeaders :kind="kind === 'attaques' ? 'attack' : 'defense'" :limit="18" /><p class="update-note">Totaux transmis dans le classement publié. Les équipes peuvent avoir disputé un nombre différent de matchs.</p></section>
   <section v-else class="panel players-panel"><div class="panel-title"><div class="flex items-center gap-3"><span class="player-heading-icon"><Icon :name="scorerTab ? 'ball' : 'assist'" :size="22" /></span><div><h2>{{ scorerTab ? 'Meilleurs buteurs' : 'Meilleurs passeurs' }}</h2><p class="muted small-text">Ligue 1 · Saison {{ state.season }}–{{ state.season + 1 }}</p></div></div><span class="data-pill">{{ playerMeta?.unavailable ? 'À VENIR' : state.mode === 'demo' ? 'JOUEURS FICTIFS' : 'SAISON EN COURS' }}</span></div>
     <div v-if="loading" class="loading-state" role="status"><span class="loader"></span><p>Chargement des joueurs…</p></div>
     <div v-else-if="error" class="alert error" role="alert"><p>{{ error }}</p><button class="button" @click="loadPlayers(true, true)" :disabled="state.refreshMode === 'pause'">Réessayer</button></div>

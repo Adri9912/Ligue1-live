@@ -30,6 +30,15 @@ class Clubs
             return [...$match,'venue'=>$stadium,'venueSource'=>'club'];
         },$matches);
     }
+    public static function cachedSquad(array $team): array {
+        $client=new ApiClient('api-football');
+        $registry=$client->cached('teams',['country'=>'France']);
+        $record=$registry?self::record($team['name'],$registry['data']):null;
+        if(!$record)return [];
+        $id=$record['team']['id'];$cached=$client->cached('players/squads',['team'=>$id]);
+        $row=collect($cached['data']??[])->firstWhere('team.id',$id);
+        return self::squad($row['players']??[]);
+    }
     public static function photo(int $id): ?string { return $id>0?'https://media.api-sports.io/football/players/'.$id.'.png':null; }
     public static function position(string $p): string { return ['Goalkeeper'=>'Gardien','Defender'=>'Défenseur','Midfielder'=>'Milieu','Attacker'=>'Attaquant','Forward'=>'Attaquant'][$p]??'Poste non renseigné'; }
     public static function country(?string $country): ?string

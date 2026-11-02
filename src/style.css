@@ -59,26 +59,26 @@
 .rank { position:relative; }
 .rank-change { display:inline-block; font-size:10px; color:var(--green-ink); margin-left:3px; }
 .rank-change.down { color:#b56d74; }
-.standings-table tr.zone-champions { --zone:#b9cfee; }
-.standings-table tr.zone-champions-qualifier { --zone:#cec2e9; }
-.standings-table tr.zone-europa { --zone:#ebd0a7; }
-.standings-table tr.zone-conference { --zone:#bcd9b5; }
-.standings-table tr.zone-playoff { --zone:#eaddaa; }
-.standings-table tr.zone-relegation { --zone:#ebbfbe; }
-.standings-table tr[class*="zone-"] { background:color-mix(in srgb,var(--zone,transparent) 13%,var(--surface)); }
-.standings-table tr[class*="zone-"] td:first-child { box-shadow:inset 4px 0 var(--zone,transparent); }
+.standings-table tr.zone-champions { --zone:#5589ec; }
+.standings-table tr.zone-champions-qualifier { --zone:#a17ae4; }
+.standings-table tr.zone-europa { --zone:#e99b38; }
+.standings-table tr.zone-conference { --zone:#54ab79; }
+.standings-table tr.zone-playoff { --zone:#dcb32e; }
+.standings-table tr.zone-relegation { --zone:#e56873; }
+.standings-table tr[class*="zone-"] { background:color-mix(in srgb,var(--zone,transparent) 24%,var(--surface)); }
+.standings-table tr[class*="zone-"] td:first-child { box-shadow:inset 5px 0 var(--zone,transparent); }
 .standings-table tr.favorite-row { background:var(--green-soft); }
 .table-live-dot { width:5px; height:5px; margin-left:2px; }
 .ranking-legend { display:flex; flex-wrap:wrap; gap:14px 24px; padding:24px 0 12px; }
 .ranking-legend>span { display:flex; align-items:center; gap:8px; font-size:10px; color:var(--muted); }
 .ranking-legend i { height:15px; width:4px; border-radius:2px; }
 .ranking-legend b { color:var(--ink); font-weight:600; min-width:23px; }
-.ranking-legend .champions { background:#b9cfee; }
-.ranking-legend .champions-qualifier { background:#cec2e9; }
-.ranking-legend .europa { background:#ebd0a7; }
-.ranking-legend .conference { background:#bcd9b5; }
-.ranking-legend .playoff { background:#eaddaa; }
-.ranking-legend .relegation { background:#ebbfbe; }
+.ranking-legend .champions { background:#5589ec; }
+.ranking-legend .champions-qualifier { background:#a17ae4; }
+.ranking-legend .europa { background:#e99b38; }
+.ranking-legend .conference { background:#54ab79; }
+.ranking-legend .playoff { background:#dcb32e; }
+.ranking-legend .relegation { background:#e56873; }
 .ranking-disclaimer { color:var(--muted); font-size:10px; line-height:1.8; max-width:900px; margin:4px 0 15px; }
 .ranking-disclaimer a { text-decoration:underline; text-underline-offset:3px; }
 .projection-note { display:flex; gap:9px; align-items:flex-start; color:var(--muted); font-size:10px; padding:14px 17px; background:var(--surface); border:1px solid var(--line); border-radius:8px; line-height:1.9; }
@@ -416,17 +416,6 @@
  .notification-banner-copy p { font-size:11px; }
 }
 
-.match-view-switch { display:flex; justify-content:flex-end; align-items:center; gap:6px; margin:0 0 14px; }
-.match-view-switch>span { font-size:12px; color:var(--muted); margin-right:5px; }
-.match-view-switch .button { min-height:36px; padding:7px 12px; font-size:12px; }
-.match-view-switch .selected { color:var(--green-ink); border-color:var(--green-ink); background:var(--green-soft); }
-.match-grid.compact-match-grid { grid-template-columns:1fr; gap:7px; }
-.match-card.compact-match { display:grid; grid-template-columns:82px minmax(0,1fr) minmax(0,1fr); align-items:center; gap:12px; padding:12px 14px; }
-.compact-match .match-top { margin:0; height:auto; justify-content:flex-start; flex-wrap:wrap; gap:4px; }
-.compact-match .match-top>svg { margin-left:0; }
-.compact-match .match-team { min-width:0; min-height:30px; font-size:12px; gap:8px; }
-.compact-match .match-bottom { display:none; }
-.compact-match .match-team>b { font-size:16px; }
 .team-form-panel { padding:22px 24px; margin:0 0 28px; }
 .team-form-panel h2 { font-size:18px; margin-bottom:15px; }
 .team-form-panel>.small-text { margin-top:12px; font-size:12px; }
@@ -454,11 +443,6 @@
 .preview-no-meetings { color:var(--muted); font-size:13px; padding-top:15px; }
 .preview-note { padding:0 24px 22px; color:var(--muted); font-size:11px; line-height:1.7; }
 @media(max-width:600px) {
- .match-view-switch { justify-content:flex-start; }
- .match-card.compact-match { grid-template-columns:65px minmax(0,1fr); gap:3px 10px; padding:10px 12px; }
- .compact-match .match-top { grid-column:1; grid-row:1 / 3; flex-direction:column; align-items:flex-start; }
- .compact-match .match-team { grid-column:2; font-size:12px; }
- .compact-match .match-team .club-badge { width:23px; height:26px; }
  .team-form-panel { padding:18px; }
  .preview-teams { grid-template-columns:1fr; }
  .preview-team { padding:18px; }
@@ -593,8 +577,6 @@
 .row-score { display:flex; align-items:center; justify-content:center; gap:6px; font-size:20px; background:var(--surface); border-radius:8px; min-height:42px; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .row-score>span { color:var(--muted); font-size:14px; }
 .row-venue { grid-column:1/-1; border-top:1px solid var(--line); padding-top:8px; color:var(--muted); font-size:11px; line-height:1.4; }
-.home-dashboard .compact-match .fixture-row { min-height:48px; }
-.home-dashboard .compact-match .row-score { min-height:34px; font-size:17px; }
 .home-dashboard .dashboard-aside { display:flex; flex-direction:column; gap:20px; }
 .home-dashboard .dashboard-aside>section { width:100%; }
 .home-dashboard .mini-table { order:-1; }
@@ -604,8 +586,8 @@
 .home-dashboard .mini-table .standings-table tbody td:last-child { border-radius:0 7px 7px 0; }
 @media(min-width:901px) {
  .home-dashboard { grid-template-columns:minmax(0,1fr) 320px; grid-template-rows:max-content 1fr; gap:24px; }
- .home-dashboard>.home-hero { grid-column:2; grid-row:1; }
- .home-dashboard>.match-section { grid-column:1; grid-row:1 / span 2; }
+ .home-dashboard>.home-hero { grid-column:1 / -1; grid-row:1; }
+ .home-dashboard>.match-section { grid-column:1; grid-row:2; }
  .home-dashboard>.dashboard-aside { grid-column:2; grid-row:2; }
  .data-control-bar { padding:0; background:transparent; border:0; box-shadow:none; }
  .data-control-bar .data-freshness.is-stale { background:transparent; border:0; padding:0; }
@@ -648,9 +630,6 @@
  .club-filter select { font-size:11px; padding:6px; }
  .round-period { margin:6px 0 10px; font-size:10px; }
  .filters { margin-bottom:10px; }
- .match-view-switch { margin-bottom:14px; gap:6px; }
- .match-view-switch>span { font-size:10px; }
- .match-view-switch .button { padding:6px 9px; font-size:11px; min-height:32px; }
  .dashboard-aside { display:flex; flex-direction:column; gap:16px; }
  .dashboard-aside>section { width:100%; }
  .dashboard-aside .mini-table { order:-1; }
@@ -688,7 +667,6 @@
  .home-dashboard .match-section .filter-tabs button { font-size:11px; min-height:36px; padding:9px 5px; border:1px solid var(--line); border-radius:7px; color:var(--muted); background:var(--soft); }
  .match-section .filter-tabs button.active { background:var(--green); color:#213015; border-color:var(--green); }
  .match-section .filters { gap:6px; }
- .match-section .match-view-switch { display:none; }
  .home-dashboard .match-card.home-match-card { display:block; padding:10px 8px 7px; background:var(--soft); border:1px solid var(--line); box-shadow:none; }
  .match-section .home-match-card>.match-top,.match-section .home-match-card>.match-team,.match-section .home-match-card>.match-bottom { display:none; }
  .home-dashboard .home-match-card .fixture-row { display:grid; grid-template-columns:44px minmax(0,1fr) 46px minmax(0,1fr); align-items:center; gap:6px; min-height:50px; }
@@ -770,4 +748,54 @@
  .match-lineup-team .pitch-player-name { font-size:9px; }
  .match-lineup-team .match-bench { padding:12px 16px; }
  .match-lineup-team .match-bench summary { min-height:36px; }
+}
+
+/* Lisibilité et repères communs aux thèmes clair et sombre. */
+.small-text,.update-note,.players-footnote,.ranking-disclaimer,.table-hint,.table-explainer { font-size:12px; }
+.eyebrow { font-size:10px; }
+.ranking-legend>span { font-size:12px; }
+.ranking-legend i { width:7px; height:19px; }
+.standings-table tr[class*="zone-"] .rank>span:first-child { display:inline-flex; align-items:center; justify-content:center; min-width:26px; min-height:28px; border-radius:5px; background:var(--zone); color:#081524; font-weight:750; }
+.standings-table tr.favorite-row[class*="zone-"] { background:color-mix(in srgb,var(--zone) 24%,var(--surface)); }
+.standings-subnav { overflow-x:auto; }
+.standings-subnav a { flex-shrink:0; white-space:nowrap; padding-inline:17px; }
+.team-metric-ranking .club-leaders li a { padding:15px 0; }
+.club-leaders li a>span.club-leader-rank { flex:0 0 24px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.round-period { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; font-size:12px; }
+.round-period .text-button { font-size:12px; padding:4px 0; }
+.row-venue,.home-hero .feature-reason,.data-control-bar .freshness-date { font-size:12px; }
+.pitch-player-name,.match-lineup-team .pitch-player-name { font-size:11px; }
+.pitch-portrait>b { font-size:11px; }
+@media(min-width:901px) {
+ .home-hero .hero-feature { max-width:760px; margin:auto; }
+ .home-hero .feature-match { justify-content:center; gap:70px; padding:12px 0; }
+ .home-hero .feature-match>div:not(.feature-score) { width:180px; }
+ .home-hero .feature-team-name { font-size:16px; }
+ .home-hero .feature-reason,.home-hero .feature-link { text-align:center; }
+}
+@media(max-width:600px) {
+ .standings-subnav a { padding:13px 12px; font-size:12px; }
+ .home-dashboard .round-selector select,.home-dashboard .club-filter select { font-size:12px; }
+ .home-dashboard .row-status,.home-dashboard .row-venue { font-size:11px; }
+ .home-dashboard .row-team { font-size:12px; }
+ .home-hero .feature-date,.home-hero .feature-team-name { font-size:12px; }
+ .data-control-bar .manual-refresh-button,.data-control-bar .data-control-state { font-size:11px; }
+ .compact.with-form .form>span { font-size:11px; }
+ .pitch-player-name,.match-lineup-team .pitch-player-name { font-size:10px; }
+ .pitch-portrait>b { font-size:10px; }
+}
+
+.standings-table th,.compact .standings-table th { font-size:11px; }
+.compact .standings-table .table-team { font-size:12px; }
+.form>span,.compact.with-form .form>span { font-size:11px; }
+.home-hero .feature-top,.home-hero .feature-score>span { font-size:11px; }
+.home-hero .feature-link { font-size:12px; }
+.day-heading>span,.filter-tabs button>span:not(.live-dot) { font-size:10px; }
+.home-dashboard .mini-table .standings-table { font-size:12px; }
+@media(min-width:901px) { .home-hero .feature-top>.feature-label { font-size:24px; } }
+
+@media(max-width:600px) {
+ .ranking-tabs { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); overflow:visible; }
+ .ranking-tabs a { grid-column:span 2; white-space:normal; text-align:center; justify-content:center; padding:12px 4px; gap:4px; }
+ .ranking-tabs a:nth-child(n+4) { grid-column:span 3; }
 }

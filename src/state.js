@@ -8,14 +8,12 @@ export const state = reactive({
   mode: null, source: null, season: null, teams: [], standings: [], matches: [], fetchedAt: null, stale: false,
   refreshMode: 'auto', manualRefresh: null, budget: null, nextRefreshAt: null, controlReady: false, refreshSerial: 0, lastRefreshWasManual: false,
   loading: true, refreshing: false, error: '', favorite: Number(read('l1-favorite', '0')) || null,
-  matchView: read('l1-match-view', 'cards') === 'compact' ? 'compact' : 'cards',
   themePreference: ['light', 'dark'].includes(read('l1-theme', 'auto')) ? read('l1-theme', 'auto') : 'auto',
   theme: document.documentElement.dataset.theme || themeAt(read('l1-theme', 'auto')), pickerOpen: false, storageError: '',
 })
 export const favoriteTeam = computed(() => state.teams.find(t => t.id === state.favorite))
 export function chooseFavorite(id) { state.favorite = id; persist('l1-favorite', id || ''); persist('l1-favorite-source', state.source || 'demo'); state.pickerOpen = false; resetAlertBaseline(id, state.matches) }
 function persist(key, value) { try { localStorage.setItem(key, String(value)) } catch { state.storageError = 'Le navigateur ne permet pas de mémoriser vos préférences. Elles restent actives pendant cette visite.' } }
-export function setMatchView(value) { state.matchView = value === 'compact' ? 'compact' : 'cards'; persist('l1-match-view', state.matchView) }
 export function syncTheme() { state.theme = themeAt(state.themePreference); document.documentElement.dataset.theme = state.theme }
 export function setTheme(value) { state.themePreference = ['light', 'dark'].includes(value) ? value : 'auto'; persist('l1-theme', state.themePreference); syncTheme() }
 export function toggleTheme() { setTheme(state.theme === 'dark' ? 'light' : 'dark') }

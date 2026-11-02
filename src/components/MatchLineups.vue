@@ -4,8 +4,11 @@ import { api, state } from '../state'
 import Badge from './Badge.vue'
 import DataFreshness from './DataFreshness.vue'
 import LineupPitch from './LineupPitch.vue'
+import PlayerAvatar from './PlayerAvatar.vue'
+import PlayerProfile from './PlayerProfile.vue'
+import { matchSquadPlayer } from '../players'
 const props=defineProps({fixture:{type:Object,required:true}})
-const data=ref(null), loading=ref(false), error=ref(''), selectedSide=ref('home')
+const data=ref(null), loading=ref(false), error=ref(''), selectedSide=ref('home'), activePlayer=ref(null)
 const mobileQuery=window.matchMedia('(max-width:800px)')
 const compactLayout=ref(mobileQuery.matches)
 function updateLayout(event) { compactLayout.value=event.matches }
@@ -22,7 +25,7 @@ async function load(manual=false) {
  finally{if(current===version)loading.value=false}
 }
 function check() { if(!document.hidden&&state.refreshMode==='auto'&&state.mode==='api'&&Date.now()>=nextAttempt)load() }
-watch(()=>props.fixture.id,()=>{version++;loading.value=false;data.value=null;selectedSide.value='home';load()},{immediate:true})
+watch(()=>props.fixture.id,()=>{version++;loading.value=false;data.value=null;selectedSide.value='home';activePlayer.value=null;load()},{immediate:true})
 watch(()=>state.refreshSerial,check)
 onMounted(()=>{timer=setInterval(check,60000);mobileQuery.addEventListener('change',updateLayout)})
 onUnmounted(()=>{version++;clearInterval(timer);mobileQuery.removeEventListener('change',updateLayout)})
@@ -41,15 +44,16 @@ onUnmounted(()=>{version++;clearInterval(timer);mobileQuery.removeEventListener(
     <section v-for="side in ['home','away']" :key="side" class="match-lineup-team" :class="{ 'inactive-lineup': selectedSide!==side }" :id="`match-lineup-${fixture.id}-${side}`" :aria-label="`Composition de ${data.fixture[side].name}`">
      <header><Badge :team="data.fixture[side]" size="small" /><h3>{{ data.fixture[side].name }}</h3><span class="data-pill">{{ data.lineups[side]?.formation || 'EN ATTENTE' }}</span></header>
      <template v-if="data.lineups[side]">
-      <LineupPitch :lineup="data.lineups[side]" />
-      <p class="players-footnote">Gardien en bas du terrain.</p>
-      <details class="match-bench" :open="!compactLayout"><summary>Remplaçants <span v-if="data.lineups[side].substitutes?.length">({{ data.lineups[side].substitutes.length }})</span></summary><ul v-if="data.lineups[side].substitutes?.length"><li v-for="(player,i) in data.lineups[side].substitutes" :key="`${player.id ?? player.name}-${i}`"><b>{{ player.number ?? '—' }}</b><span>{{ player.name }}<small>{{ player.position }}</small></span></li></ul><p v-else class="muted">Aucun remplaçant transmis par le fournisseur.</p></details>
+      <LineupPitch :lineup="data.lineups[side]" :squad="data.squads?.[side] || []" @player="activePlayer={clubId:data.fixture[side].id,player:$event}" />
+      <p class="players-footnote">Gardien en bas du terrain. Portraits issus des effectifs déjà en cache, uniquement si le joueur est reconnu avec certitude.</p>
+      <details class="match-bench" :open="!compactLayout"><summary>Remplaçants <span v-if="data.lineups[side].substitutes?.length">({{ data.lineups[side].substitutes.length }})</span></summary><ul v-if="data.lineups[side].substitutes?.length"><li v-for="(player,i) in data.lineups[side].substitutes" :key="`${player.id ?? player.name}-${i}`"><PlayerAvatar :photo="matchSquadPlayer(player,data.squads?.[side] || [])?.photo" :name="player.name" /><b>{{ player.number ?? '—' }}</b><span>{{ player.name }}<small>{{ player.position }}</small></span></li></ul><p v-else class="muted">Aucun remplaçant transmis par le fournisseur.</p></details>
      </template>
      <div v-else class="empty"><h4>Composition pas encore disponible</h4><p>Elle apparaîtra ici si le fournisseur la transmet pour ce match.</p></div>
     </section>
    </div>
    </template>
   </template>
+  <PlayerProfile v-if="activePlayer" :key="`${activePlayer.clubId}-${activePlayer.player.id}`" :club-id="activePlayer.clubId" :player="activePlayer.player" @close="activePlayer=null" />
   <p v-if="state.source === 'highlightly'" class="players-footnote">Source : Highlightly. Réponses partagées entre visiteurs ; compositions complètes conservées en cache, recherche des compositions manquantes espacée d’au moins 15 minutes. Les modes Manuel/Pause et le quota global restent appliqués.</p>
  </section>
 </template>

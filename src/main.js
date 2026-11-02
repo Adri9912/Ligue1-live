@@ -17,6 +17,7 @@ const router = createRouter({
   routes: [
     { path: '/', component: Matches, meta: { title: 'Matchs' } },
     { path: '/classement', component: Standings, meta: { title: 'Classement' } },
+    { path: '/classement/:kind(attaques|defenses)', component: Standings, meta: { title: 'Classement des équipes' } },
     { path: '/classement/:kind(buteurs|passeurs)', component: Standings, meta: { title: 'Classement des joueurs' } },
     { path: '/clubs/:id(\\d+)?', component: Clubs, meta: { title: 'Clubs' } },
     { path: '/a-propos', component: Information, meta: { title: 'À propos', information: true } },

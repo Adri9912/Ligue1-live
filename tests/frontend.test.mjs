@@ -42,3 +42,14 @@ test('alertes : seulement le club favori, sans rattrapage ni faux but après une
   assert.deepEqual(matchAlerts([goal], [end], 1, { ...options, final: false }).map(n => n.type), ['goals'])
   assert.deepEqual(matchAlerts([start], [goal], 1, { ...options, goals: false }), [])
 })
+
+
+test('portraits : nom et numéro concordants, homonymes et identifiants des fournisseurs distincts', async () => {
+  const { matchSquadPlayer } = await import('../src/players.js')
+  const squad = [{ id: 9001, name: 'Ousmane Dembélé', number: 10 }, { id: 9002, name: 'A. Martin', number: 2 }]
+  assert.equal(matchSquadPlayer({ id: 123, name: 'O. Dembele', number: 10 }, squad)?.id, 9001)
+  assert.equal(matchSquadPlayer({ name: 'O. Dembele', number: 9 }, squad), null)
+  assert.equal(matchSquadPlayer({ id: 9001, name: 'Autre Joueur', number: 10 }, squad), null)
+  assert.equal(matchSquadPlayer({ name: 'O. Dembele' }, [...squad, squad[0]]), null)
+  assert.equal(matchSquadPlayer({ name: 'O. Dembele' }, []), null)
+})

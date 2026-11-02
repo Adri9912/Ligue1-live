@@ -13,7 +13,19 @@ class League
     }
     private function summaryKey(string $kind): string { return 'football:summary:'.$this->client->provider.':'.$this->season.':'.$kind; }
     private function params(): array { return $this->client->provider === 'highlightly' ? ['leagueId'=>52695,'season'=>$this->season] : ['league'=>61,'season'=>$this->season]; }
-    public static function team(array $t): array { return ['id'=>$t['id'],'name'=>$t['name'],'code'=>$t['code']??mb_strtoupper(mb_substr($t['name'],0,3)),'logo'=>$t['logo']??null,'color'=>'#365d88']; }
+    public static function team(array $t): array {
+        $key=preg_replace('/[^a-z0-9]/','',strtolower(\Illuminate\Support\Str::ascii($t['name'])));
+        [$name,$code,$fullName]=match($key) {
+            'parissaintgermain','psg'=>['PSG','PSG','Paris Saint-Germain'],
+            'parisfc'=>['Paris FC','PFC','Paris FC'],
+            'stadebrestois29','brest'=>['Brest','BRE','Stade Brestois 29'],
+            'lehavreac','lehavre'=>['Le Havre','HAC','Le Havre AC'],
+            'rennesfc','rennes'=>['Rennes','REN','Rennes FC'],
+            'estactroyes','troyes'=>['Troyes','EST','ESTAC Troyes'],
+            default=>[$t['name'],$t['code']??mb_strtoupper(mb_substr($t['name'],0,3)),$t['name']],
+        };
+        return ['id'=>$t['id'],'name'=>$name,'fullName'=>$fullName,'code'=>$code,'logo'=>$t['logo']??null,'color'=>'#365d88'];
+    }
     public static function fixture(array $f): array
     {
         preg_match('/(\d+)$/',(string)($f['league']['round']??''),$round);

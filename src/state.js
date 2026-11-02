@@ -7,6 +7,7 @@ function read(key, fallback) { try { return localStorage.getItem(key) || fallbac
 export const state = reactive({
   mode: null, source: null, season: null, teams: [], standings: [], matches: [], fetchedAt: null, stale: false, matchesFetchedAt: null, standingsFetchedAt: null, matchesStale: false, standingsStale: false, refreshNotice: '',
   refreshMode: 'auto', manualRefresh: null, budget: null, nextRefreshAt: null, controlReady: false, refreshSerial: 0, lastRefreshWasManual: false,
+  matchFilters: { filter: 'all', round: null, selectedTeam: '', followCurrentRound: true },
   loading: true, refreshing: false, error: '', favorite: Number(read('l1-favorite', '0')) || null,
   themePreference: ['light', 'dark'].includes(read('l1-theme', 'auto')) ? read('l1-theme', 'auto') : 'auto',
   theme: document.documentElement.dataset.theme || themeAt(read('l1-theme', 'auto')), pickerOpen: false, storageError: '',

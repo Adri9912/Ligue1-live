@@ -22,7 +22,7 @@ class Clubs
         if(!$cached || Schedule::now()-$cached['time']>=30*86400000)return $matches;
         return array_map(function($match) use($cached) {
             if(!empty($match['venue']))return $match;
-            $record=self::record($match['home']['name'],$cached['data']);
+            $record=self::record($match['home']['fullName']??$match['home']['name'],$cached['data']);
             if(!$record)return $match;
             $stadium=self::CORRECTIONS[$record['team']['id']]['stadium']??$record['venue']['name']??null;
             if(!is_string($stadium)||!trim($stadium))return $match;
@@ -33,7 +33,7 @@ class Clubs
     public static function cachedSquad(array $team): array {
         $client=new ApiClient('api-football');
         $registry=$client->cached('teams',['country'=>'France']);
-        $record=$registry?self::record($team['name'],$registry['data']):null;
+        $record=$registry?self::record($team['fullName']??$team['name'],$registry['data']):null;
         if(!$record)return [];
         $id=$record['team']['id'];$cached=$client->cached('players/squads',['team'=>$id]);
         $row=collect($cached['data']??[])->firstWhere('team.id',$id);
@@ -68,7 +68,7 @@ class Clubs
         if(!$current)throw new ApiError('Club introuvable dans la saison actuelle de Ligue 1.',404);
         if(!$this->client->key())throw new ApiError('La clé API-Football est nécessaire pour les effectifs.',503);
         $registry=$this->client->request('teams',['country'=>'France'],30*86400000,$manual);
-        $record=self::record($current['name'],$registry['data']);
+        $record=self::record($current['fullName']??$current['name'],$registry['data']);
         if(!$record)throw new ApiError('La correspondance de ce club entre les fournisseurs reste à vérifier.',422);
         $apiId=$record['team']['id'];$correction=self::CORRECTIONS[$apiId]??[];
         $club=[...League::team($record['team']),'id'=>$id,'founded'=>$correction['founded']??$record['team']['founded']??null,'stadium'=>$correction['stadium']??$record['venue']['name']??null,'city'=>$record['venue']['city']??null,'correctionSource'=>$correction['source']??null];

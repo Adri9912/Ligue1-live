@@ -29,7 +29,7 @@ const router = createRouter({
     { path: '/matchs/:id(\\d+)', component: Match, meta: { title: 'Match' } },
     { path: '/:pathMatch(.*)*', component: NotFound, meta: { title: 'Page introuvable' } },
   ],
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior: (to, from, savedPosition) => savedPosition || { top: 0 },
 })
 router.afterEach(to => { document.title = `${to.meta.title} · Ligue 1 Live` })
 function reserveIntro() {

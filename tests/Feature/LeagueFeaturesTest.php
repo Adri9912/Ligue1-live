@@ -23,6 +23,25 @@ class LeagueFeaturesTest extends TestCase
         $n=0;$rows=[];foreach([1,4,3,3] as $count){$row=[];for($i=0;$i<$count;$i++){$n++;$row[]=['id'=>$n,'name'=>'Player '.$n,'number'=>$n,'position'=>$n===1?'Goalkeeper':'Defender'];}$rows[]=$row;}
         return ['homeTeam'=>['id'=>73119,'formation'=>'4-3-3','initialLineup'=>$rows]];
     }
+    public function test_club_labels_distinguish_paris_clubs_and_preserve_full_names(): void {
+        foreach([
+            ['Paris Saint Germain','PSG','PSG','Paris Saint-Germain'],
+            ['Paris Saint-Germain','PSG','PSG','Paris Saint-Germain'],
+            ['Paris FC','Paris FC','PFC','Paris FC'],
+            ['LE Havre AC','Le Havre','HAC','Le Havre AC'],
+            ['Stade Brestois 29','Brest','BRE','Stade Brestois 29'],
+            ['Rennes FC','Rennes','REN','Rennes FC'],
+            ['Estac Troyes','Troyes','EST','ESTAC Troyes'],
+        ] as [$input,$name,$code,$fullName]) {
+            $team=\App\Football\League::team(['id'=>123,'name'=>$input,'logo'=>'https://example.test/logo.png']);
+            $this->assertSame($name,$team['name']);$this->assertSame($code,$team['code']);
+            $this->assertSame($fullName,$team['fullName']);$this->assertSame(123,$team['id']);
+            $this->assertSame('https://example.test/logo.png',$team['logo']);
+        }
+        $unknown=\App\Football\League::team(['id'=>999,'name'=>'Autre club','code'=>'AUT']);
+        $this->assertSame('Autre club',$unknown['name']);$this->assertSame('AUT',$unknown['code']);
+        Http::assertNothingSent();
+    }
     public function test_details_events_stats_missing_scores_and_current_season_validation(): void {
         $m=$this->matchRow();$m['statistics']=[['team'=>['id'=>73119],'statistics'=>[['displayName'=>'Possession','value'=>0.54],['displayName'=>'Shots on target','value'=>0]]]];
         $m['events']=[['time'=>'45 + 2','type'=>'Own Goal','team'=>['id'=>73119],'player'=>'A']];
@@ -94,7 +113,7 @@ class LeagueFeaturesTest extends TestCase
         $registry=[['team'=>['id'=>85,'name'=>'Paris Saint Germain','founded'=>1970,'national'=>false],'venue'=>['name'=>'Parc des Princes','city'=>'Paris']]];
         $players=[['id'=>20,'name'=>'Attacker','position'=>'Attacker','number'=>null],['id'=>10,'name'=>'Keeper','position'=>'Goalkeeper','number'=>1]];
         Http::fake(['*/standings?*'=>Http::response($this->table()),'*/teams?country*'=>Http::response(['response'=>$registry]),'*/players/squads*'=>Http::response(['response'=>[['team'=>['id'=>85],'players'=>$players]]]),'*/players/profiles*'=>Http::response(['response'=>[['player'=>['id'=>10,'firstname'=>'Full','lastname'=>'Keeper','nationality'=>'Belgium','birth'=>['date'=>'2000-01-01','country'=>'England'],'height'=>'190 cm']]]])]);
-        $this->getJson('/api/clubs/73119')->assertOk()->assertJsonPath('club.id',73119)->assertJsonPath('squad.0.id',10)->assertJsonPath('squad.0.photo','https://media.api-sports.io/football/players/10.png')->assertJsonPath('squadFetchedAt',now()->getTimestampMs())->assertJsonPath('squadStale',false)->assertJsonCount(14,'honours.seasons')->assertJsonPath('squad.1.number',null);
+        $this->getJson('/api/clubs/73119')->assertOk()->assertJsonPath('club.id',73119)->assertJsonPath('club.name','PSG')->assertJsonPath('club.fullName','Paris Saint-Germain')->assertJsonPath('squad.0.id',10)->assertJsonPath('squad.0.photo','https://media.api-sports.io/football/players/10.png')->assertJsonPath('squadFetchedAt',now()->getTimestampMs())->assertJsonPath('squadStale',false)->assertJsonCount(14,'honours.seasons')->assertJsonPath('squad.1.number',null);
         $this->getJson('/api/clubs/73119/players/10')->assertOk()->assertJsonPath('player.name','Full Keeper')->assertJsonPath('player.height','190 cm')->assertJsonPath('player.nationality','Belgique')->assertJsonPath('player.birthCountry','Angleterre');
         $this->getJson('/api/clubs/73119/players/999')->assertNotFound();
         $this->getJson('/api/clubs/999')->assertNotFound();Http::assertSentCount(4);

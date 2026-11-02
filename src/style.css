@@ -776,10 +776,10 @@
 @media(max-width:600px) {
  .standings-subnav a { padding:13px 12px; font-size:12px; }
  .home-dashboard .round-selector select,.home-dashboard .club-filter select { font-size:12px; }
- .home-dashboard .row-status,.home-dashboard .row-venue { font-size:11px; }
+ .home-dashboard .row-status,.home-dashboard .row-venue { font-size:12px; }
  .home-dashboard .row-team { font-size:12px; }
  .home-hero .feature-date,.home-hero .feature-team-name { font-size:12px; }
- .data-control-bar .manual-refresh-button,.data-control-bar .data-control-state { font-size:11px; }
+ .data-control-bar .manual-refresh-button,.data-control-bar .data-control-state { font-size:12px; }
  .compact.with-form .form>span { font-size:11px; }
  .pitch-player-name,.match-lineup-team .pitch-player-name { font-size:10px; }
  .pitch-portrait>b { font-size:10px; }
@@ -788,9 +788,11 @@
 .standings-table th,.compact .standings-table th { font-size:11px; }
 .compact .standings-table .table-team { font-size:12px; }
 .form>span,.compact.with-form .form>span { font-size:11px; }
-.home-hero .feature-top,.home-hero .feature-score>span { font-size:11px; }
+.home-hero .feature-top,.home-hero .feature-score>span { font-size:12px; }
 .home-hero .feature-link { font-size:12px; }
-.day-heading>span,.filter-tabs button>span:not(.live-dot) { font-size:10px; }
+.day-heading>span,.filter-tabs button>span:not(.live-dot),.manual-refresh-button small { font-size:12px; }
+.home-dashboard .match-section .filter-tabs button { font-size:12px; }
+.row-status,.match-status,.match-date,.day-heading h3 { font-size:12px; }
 .home-dashboard .mini-table .standings-table { font-size:12px; }
 @media(min-width:901px) { .home-hero .feature-top>.feature-label { font-size:24px; } }
 
@@ -801,3 +803,11 @@
 }
 
 .refresh-feedback { flex-basis:100%; grid-column:1/-1; margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }
+
+.coming-soon-badge { display:inline-block; border:1px solid var(--line); border-radius:5px; padding:2px 5px; background:var(--soft); color:var(--muted); font-size:12px; line-height:1.4; font-weight:500; white-space:nowrap; }
+@media(max-width:600px) {
+ .ranking-tabs a:nth-child(n+4) { flex-wrap:wrap; }
+ .home-dashboard .home-match-card .fixture-row { grid-template-columns:48px minmax(0,1fr) 46px minmax(0,1fr); }
+ .home-dashboard .match-section .filter-tabs { flex-wrap:wrap; justify-content:flex-start; gap:5px; }
+ .home-dashboard .match-section .filter-tabs button { flex:1 0 auto; }
+}

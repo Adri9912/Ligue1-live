@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, toRefs, onMounted, onUnmounted } from 'vue'
 import { filterRoundMatches } from '../teamMatches.js'
 import { featuredMatch } from '../featuredMatch.js'
 import { state, currentRound, isLive, isFinished, isUpcoming, favoriteTeam, day, dateKey, time } from '../state'
@@ -8,9 +8,13 @@ import StandingsTable from '../components/StandingsTable.vue'
 import Badge from '../components/Badge.vue'
 import Icon from '../components/Icon.vue'
 import HomePlayerLeaders from '../components/HomePlayerLeaders.vue'
-const filter = ref('all'), round = ref(currentRound.value), selectedTeam = ref('')
-const followCurrentRound = ref(true)
-watch(currentRound, value => { if (followCurrentRound.value) { round.value = value; filter.value = 'all' } })
+const { filter, round, selectedTeam, followCurrentRound } = toRefs(state.matchFilters)
+watch(currentRound, value => {
+  if (followCurrentRound.value) {
+    if (round.value !== value) filter.value = 'all'
+    round.value = value
+  }
+}, { immediate: true })
 function selectRound() { followCurrentRound.value = Number(round.value) === currentRound.value; filter.value = 'all' }
 const rounds = computed(() => [...new Set(state.matches.map(m => m.round).filter(Boolean))].sort((a, b) => a - b))
 const roundMatches = computed(() => state.matches.filter(m => m.round === Number(round.value)))

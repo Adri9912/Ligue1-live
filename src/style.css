@@ -735,3 +735,39 @@
 .club-leaders>small { color:var(--muted); font-size:11px; line-height:1.5; display:block; }
 .club-leaders-empty { padding:20px 0; }
 @media(max-width:600px) { .club-leaders-grid { grid-template-columns:1fr; gap:14px; } .club-leaders { padding:18px; } .statistics-nav { overflow-x:auto; white-space:nowrap; } }
+
+.match-lineups { padding:20px 24px; }
+.lineups-note,.lineups-message { font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:18px; }
+.match-lineups-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px; }
+.match-lineup-team { min-width:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.match-lineup-team>header { display:flex; align-items:center; gap:10px; padding:16px; }
+.match-lineup-team h3 { flex:1; font-size:15px; }
+.match-lineup-team .lineup-pitch { margin:0 10px 12px; min-height:450px; padding:28px 12px; }
+.match-lineup-team .players-footnote { padding:0 12px; }
+.match-bench { padding:16px; border-top:1px solid var(--line); }
+.match-bench summary { cursor:pointer; font-size:13px; font-weight:650; min-height:32px; }
+.match-bench[open] summary { margin-bottom:12px; }
+.match-bench ul { list-style:none; padding:0; margin:0; }
+.match-bench li { display:flex; gap:12px; align-items:center; padding:10px 0; font-size:12px; }
+.match-bench li+li { border-top:1px solid var(--line); }
+.match-bench li>b { min-width:24px; color:var(--muted); }
+.match-bench small { display:block; margin-top:3px; color:var(--muted); font-size:11px; }
+.match-bench>p { font-size:12px; }
+@media(max-width:800px) { .match-lineups-grid { grid-template-columns:1fr; } }
+@media(max-width:600px) { .match-lineups { padding:16px 10px; } .match-detail .detail-tabs { gap:16px; padding:0 16px; } .match-detail .detail-tabs button { font-size:11px; } .match-lineup-team>header { padding:12px; } }
+
+.lineup-team-switch { display:none; }
+.lineups-info { margin-bottom:14px; color:var(--muted); font-size:12px; }
+.lineups-info summary { cursor:pointer; padding:6px 0; }
+.lineups-info .lineups-note { margin:8px 0 0; }
+@media(max-width:800px) {
+ .lineup-team-switch { position:sticky; top:0; z-index:2; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:8px 0 12px; background:var(--surface); }
+ .lineup-team-switch button { display:flex; align-items:center; justify-content:center; gap:7px; min-height:48px; padding:9px 7px; border:1px solid var(--line); border-radius:8px; color:var(--ink); background:var(--soft); font-size:12px; font-weight:650; }
+ .lineup-team-switch .selected { border-color:var(--green-ink); background:var(--green-soft); color:var(--green-ink); }
+ .lineup-team-switch span:not(.club-badge) { min-width:0; overflow-wrap:anywhere; }
+ .match-lineup-team.inactive-lineup { display:none; }
+ .match-lineup-team .lineup-pitch { min-height:380px; padding:24px 9px; gap:16px; }
+ .match-lineup-team .pitch-player-name { font-size:9px; }
+ .match-lineup-team .match-bench { padding:12px 16px; }
+ .match-lineup-team .match-bench summary { min-height:36px; }
+}

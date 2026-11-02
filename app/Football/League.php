@@ -112,6 +112,27 @@ class League
         $metric=$kind==='scorers'?'goals':'assists';$players=array_values(array_filter(Normalize::players($r['data']),fn($p)=>$p[$metric]!==null));usort($players,fn($a,$b)=>$b[$metric]<=>$a[$metric]);
         return ['players'=>$players,'fetchedAt'=>$r['fetchedAt'],'stale'=>$r['stale']];
     }
+    public function matchLineups(int $id,bool $manual=false): array
+    {
+        $list=$this->matches($manual);$fixture=collect($list['matches'])->firstWhere('id',$id);
+        if(!$fixture)throw new ApiError('Match introuvable en Ligue 1 pour cette saison.',404);
+        $empty=['fixture'=>$fixture,'lineups'=>['home'=>null,'away'=>null],'fetchedAt'=>null,'stale'=>$list['stale'],'nextLookupAt'=>null];
+        if(!$this->client->key())return [...$empty,'unavailable'=>'Compositions non disponibles dans cette démonstration.'];
+        if($this->client->provider!=='highlightly')return [...$empty,'unavailable'=>'Les compositions de match ne sont pas intégrées pour ce fournisseur.'];
+        if(in_array($fixture['status'],['TBD','PST','CANC','ABD','AWD','WO'],true))return [...$empty,'unavailable'=>'Aucune composition disponible pour ce statut de match.'];
+        $opensAt=Schedule::timestamp($fixture['date'])-40*60000;
+        if($fixture['status']==='NS'&&Schedule::now()<$opensAt)return [...$empty,'unavailable'=>'Les compositions pourront être recherchées à l’approche du coup d’envoi.','nextLookupAt'=>$opensAt];
+        $homeId=$fixture['home']['id'];$awayId=$fixture['away']['id'];
+        $r=$this->client->request('lineups/'.$id,[],function($entry) use($homeId,$awayId) {
+            $complete=Normalize::lineup($entry['data'],$homeId)&&Normalize::lineup($entry['data'],$awayId);
+            return Schedule::now()-$entry['time']<($complete?30*86400000:900000);
+        },$manual);
+        $root=array_is_list($r['data'])?($r['data'][0]??[]):$r['data'];
+        foreach(['homeTeam'=>$homeId,'awayTeam'=>$awayId] as $side=>$expected)if(isset($root[$side]['id'])&&$root[$side]['id']!==$expected)throw new ApiError('Composition reçue pour une autre équipe.',502);
+        $home=Normalize::lineup($r['data'],$homeId);$away=Normalize::lineup($r['data'],$awayId);
+        return ['fixture'=>$fixture,'lineups'=>['home'=>$home,'away'=>$away],'fetchedAt'=>$r['fetchedAt'],'stale'=>$r['stale']||$list['stale'],
+            'nextLookupAt'=>$home&&$away?null:max(Schedule::now()+60000,$r['fetchedAt']+900000)];
+    }
     public function lineup(int $clubId,int $offset=0,bool $manual=false): array
     {
         if($this->client->provider!=='highlightly')throw new ApiError('Les compositions nécessitent Highlightly.',503);

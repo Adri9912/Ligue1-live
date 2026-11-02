@@ -18,6 +18,7 @@ class FootballController extends Controller
     }
 
     public function detail(Request $r,string $id) { return $this->reply(fn($l,$m)=>$l->detail((int)$id,$m),$r); }
+    public function matchLineups(Request $r,string $id) { return $this->reply(fn($l,$m)=>$l->matchLineups((int)$id,$m),$r); }
     public function players(Request $r,string $kind) { return $this->reply(fn($l,$m)=>$l->players($kind,$m),$r); }
     public function lineup(Request $r,string $id) {
         $offset=$r->query('offset','0');

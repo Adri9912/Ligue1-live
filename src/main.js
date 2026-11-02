@@ -9,6 +9,7 @@ import Retro from './views/Retro.vue'
 import Clubs from './views/Clubs.vue'
 import Information from './views/Information.vue'
 import Statistics from './views/Statistics.vue'
+import NotFound from './views/NotFound.vue'
 import './style.css'
 import { claimIntro } from './intro-session.mjs'
 const router = createRouter({
@@ -25,7 +26,7 @@ const router = createRouter({
     { path: '/mon-equipe', component: Team, meta: { title: 'Mon équipe' } },
     { path: '/equipes/:id(\\d+)', component: Team, meta: { title: 'Équipe' } },
     { path: '/matchs/:id(\\d+)', component: Match, meta: { title: 'Match' } },
-    { path: '/:pathMatch(.*)*', component: { template: '<section class="empty panel"><h1>Cette page a quitté le terrain.</h1><p>Retrouvez les rencontres de Ligue 1.</p><RouterLink to="/" class="button primary">Voir les matchs</RouterLink></section>' }, meta: { title: 'Page introuvable' } },
+    { path: '/:pathMatch(.*)*', component: NotFound, meta: { title: 'Page introuvable' } },
   ],
   scrollBehavior: () => ({ top: 0 }),
 })

@@ -58,6 +58,16 @@ class Normalize
                 $line[]=['id'=>$p['id']??null,'name'=>$p['name'],'number'=>$p['number']??null,'position'=>Clubs::position($p['position']??'')];
             }$result[]=$line;
         }
-        return count($unique)===11?['formation'=>$team['formation'],'rows'=>$result]:null;
+        $substitutes=null;
+        if(is_array($team['substitutes']??null)) {
+            $substitutes=[];
+            foreach($team['substitutes'] as $p) {
+                if(!is_array($p)||!is_string($p['name']??null)||!trim($p['name']))continue;
+                $key=isset($p['id'])?'id:'.$p['id']:$p['name'].':'.($p['number']??'');
+                if(isset($unique[$key]))continue;$unique[$key]=true;
+                $substitutes[]=['id'=>$p['id']??null,'name'=>$p['name'],'number'=>$p['number']??null,'position'=>Clubs::position($p['position']??'')];
+            }
+        }
+        return ['formation'=>$team['formation'],'rows'=>$result,'substitutes'=>$substitutes];
     }
 }

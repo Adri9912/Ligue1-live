@@ -5,6 +5,7 @@ Route::get('/{section}', FootballController::class)->where('section', 'status|ma
 
 Route::post('/control', [FootballController::class, 'control']);
 
+Route::get('/matches/{id}/lineups', [FootballController::class,'matchLineups'])->where('id','[0-9]{1,10}');
 Route::get('/matches/{id}', [FootballController::class,'detail'])->where('id','[0-9]{1,10}');
 Route::get('/players/{kind}', [FootballController::class,'players'])->where('kind','scorers|assists');
 Route::get('/clubs/{id}', [FootballController::class,'club'])->where('id','[0-9]{1,10}');

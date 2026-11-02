@@ -799,3 +799,5 @@
  .ranking-tabs a { grid-column:span 2; white-space:normal; text-align:center; justify-content:center; padding:12px 4px; gap:4px; }
  .ranking-tabs a:nth-child(n+4) { grid-column:span 3; }
 }
+
+.refresh-feedback { flex-basis:100%; grid-column:1/-1; margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }

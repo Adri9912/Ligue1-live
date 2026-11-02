@@ -72,13 +72,13 @@ class Clubs
         if(!$record)throw new ApiError('La correspondance de ce club entre les fournisseurs reste à vérifier.',422);
         $apiId=$record['team']['id'];$correction=self::CORRECTIONS[$apiId]??[];
         $club=[...League::team($record['team']),'id'=>$id,'founded'=>$correction['founded']??$record['team']['founded']??null,'stadium'=>$correction['stadium']??$record['venue']['name']??null,'city'=>$record['venue']['city']??null,'correctionSource'=>$correction['source']??null];
-        $squad=[];$error='';$status=null;$time=$registry['fetchedAt'];$stale=$registry['stale'];
+        $squad=[];$error='';$status=null;$squadTime=null;$squadStale=false;$time=$registry['fetchedAt'];$stale=$registry['stale'];
         try {
             $r=$this->client->request('players/squads',['team'=>$apiId],86400000,$manual);$row=collect($r['data'])->firstWhere('team.id',$apiId);
-            if(empty($row['players']))$error='L’effectif n’est pas disponible pour ce club.';else $squad=self::squad($row['players']);
+            if(empty($row['players']))$error='L’effectif n’est pas disponible pour ce club.';else { $squad=self::squad($row['players']);$squadTime=$r['fetchedAt'];$squadStale=$r['stale']; }
             $time=$r['fetchedAt'];$stale=$stale||$r['stale'];
         } catch(ApiError $e) { $error=$e->getMessage();$status=$e->getStatusCode(); }
-        return ['club'=>$club,'squad'=>$squad,'squadError'=>$error,'squadErrorStatus'=>$status,'honours'=>self::honours($apiId),'fetchedAt'=>$time,'stale'=>$stale,'clubSource'=>'API-Football','clubBudget'=>$this->client->budget()];
+        return ['club'=>$club,'squad'=>$squad,'squadError'=>$error,'squadErrorStatus'=>$status,'squadFetchedAt'=>$squadTime,'squadStale'=>$squadStale,'honours'=>self::honours($apiId),'fetchedAt'=>$time,'stale'=>$stale,'clubSource'=>'API-Football','clubBudget'=>$this->client->budget()];
     }
     public function player(int $clubId,int $id,bool $manual=false): array
     {

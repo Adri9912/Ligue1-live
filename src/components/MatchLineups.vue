@@ -26,7 +26,10 @@ async function load(manual=false) {
 }
 function check() { if(!document.hidden&&state.refreshMode==='auto'&&state.mode==='api'&&Date.now()>=nextAttempt)load() }
 watch(()=>props.fixture.id,()=>{version++;loading.value=false;data.value=null;selectedSide.value='home';activePlayer.value=null;load()},{immediate:true})
-watch(()=>state.refreshSerial,check)
+watch(()=>state.refreshSerial,()=>{
+ if(state.lastRefreshWasManual && state.refreshMode!=='pause' && Date.now()>=nextAttempt)load(true)
+ else check()
+})
 onMounted(()=>{timer=setInterval(check,60000);mobileQuery.addEventListener('change',updateLayout)})
 onUnmounted(()=>{version++;clearInterval(timer);mobileQuery.removeEventListener('change',updateLayout)})
 </script>

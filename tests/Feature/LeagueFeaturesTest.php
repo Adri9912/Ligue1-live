@@ -83,11 +83,18 @@ class LeagueFeaturesTest extends TestCase
         $lineup['homeTeam']['initialLineup'][1][0]['id']=1;$this->assertNull(Normalize::lineup($lineup,73119));
         $this->assertNull(Normalize::lineup([],73119));Http::assertSentCount(5);
     }
+    public function test_failed_squad_load_never_reports_a_received_squad_or_uses_the_registry_date(): void {
+        config(['football.refresh_mode'=>'auto']);
+        $registry=[['team'=>['id'=>85,'name'=>'Paris Saint Germain','founded'=>1970],'venue'=>['name'=>'Parc des Princes']]];
+        Http::fake(['*/standings?*'=>Http::response($this->table()),'*/teams?country*'=>Http::response(['response'=>$registry]),'*/players/squads*'=>Http::response(['errors'=>['access'=>'Your account is Suspended']])]);
+        $this->getJson('/api/clubs/73119')->assertOk()->assertJsonPath('club.founded',1970)->assertJsonCount(0,'squad')->assertJsonPath('squadErrorStatus',403)->assertJsonPath('squadFetchedAt',null)->assertJsonPath('squadStale',false);
+        $this->getJson('/api/clubs/73119')->assertOk()->assertJsonPath('squadErrorStatus',403);Http::assertSentCount(3);
+    }
     public function test_club_squad_photo_profiles_membership_and_cache(): void {
         $registry=[['team'=>['id'=>85,'name'=>'Paris Saint Germain','founded'=>1970,'national'=>false],'venue'=>['name'=>'Parc des Princes','city'=>'Paris']]];
         $players=[['id'=>20,'name'=>'Attacker','position'=>'Attacker','number'=>null],['id'=>10,'name'=>'Keeper','position'=>'Goalkeeper','number'=>1]];
         Http::fake(['*/standings?*'=>Http::response($this->table()),'*/teams?country*'=>Http::response(['response'=>$registry]),'*/players/squads*'=>Http::response(['response'=>[['team'=>['id'=>85],'players'=>$players]]]),'*/players/profiles*'=>Http::response(['response'=>[['player'=>['id'=>10,'firstname'=>'Full','lastname'=>'Keeper','nationality'=>'Belgium','birth'=>['date'=>'2000-01-01','country'=>'England'],'height'=>'190 cm']]]])]);
-        $this->getJson('/api/clubs/73119')->assertOk()->assertJsonPath('club.id',73119)->assertJsonPath('squad.0.id',10)->assertJsonPath('squad.0.photo','https://media.api-sports.io/football/players/10.png')->assertJsonCount(14,'honours.seasons')->assertJsonPath('squad.1.number',null);
+        $this->getJson('/api/clubs/73119')->assertOk()->assertJsonPath('club.id',73119)->assertJsonPath('squad.0.id',10)->assertJsonPath('squad.0.photo','https://media.api-sports.io/football/players/10.png')->assertJsonPath('squadFetchedAt',now()->getTimestampMs())->assertJsonPath('squadStale',false)->assertJsonCount(14,'honours.seasons')->assertJsonPath('squad.1.number',null);
         $this->getJson('/api/clubs/73119/players/10')->assertOk()->assertJsonPath('player.name','Full Keeper')->assertJsonPath('player.height','190 cm')->assertJsonPath('player.nationality','Belgique')->assertJsonPath('player.birthCountry','Angleterre');
         $this->getJson('/api/clubs/73119/players/999')->assertNotFound();
         $this->getJson('/api/clubs/999')->assertNotFound();Http::assertSentCount(4);

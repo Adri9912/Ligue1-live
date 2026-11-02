@@ -55,6 +55,32 @@ class FootballTest extends TestCase
         config(['football.refresh_mode'=>'pause']);
         $this->assertTrue($client->request('test',[],1000)['stale']);Http::assertSentCount(2);
     }
+    public function test_suspended_access_uses_a_cooldown_preserves_cached_data_and_never_leaks_provider_errors(): void
+    {
+        config(['football.refresh_mode'=>'auto']);
+        $suspended=false;$status=200;
+        Http::fake(function($request)use(&$suspended,&$status) {
+            if(str_contains($request->url(),'soccer.highlightly.net'))return Http::response(['data'=>[]]);
+            return Http::response($suspended?['errors'=>['access'=>'Your account is Suspended: fake-other-key']]:['response'=>['cached data']],$status);
+        });
+        $client=new ApiClient('api-football');
+        $first=$client->request('teams',[],1000);
+        $this->travel(2)->seconds();$suspended=true;
+        $old=$client->request('teams',[],1000);
+        $this->assertTrue($old['stale']);$this->assertSame($first['data'],$old['data']);
+        foreach([false,true] as $manual) {
+            try { $client->request('players/squads',['team'=>80],1000,$manual);$this->fail('Suspension ignorée'); }
+            catch(ApiError $e) { $this->assertSame(403,$e->getStatusCode());$this->assertStringContainsString('suspendu',$e->getMessage());$this->assertStringNotContainsString('fake-other-key',$e->getMessage()); }
+        }
+        Http::assertSentCount(2);$this->assertSame(2,$client->budget()['used']);
+        (new ApiClient('highlightly'))->request('test',[],1000);Http::assertSentCount(3);
+        $this->travel(16)->minutes();$status=403;
+        try { $client->request('players/squads',['team'=>80],1000);$this->fail('Suspension HTTP 403 ignorée'); }
+        catch(ApiError $e) { $this->assertSame(403,$e->getStatusCode()); }
+        Http::assertSentCount(4);
+        $this->travel(16)->minutes();$suspended=false;$status=200;
+        $this->assertFalse($client->request('players/squads',['team'=>80],1000)['stale']);Http::assertSentCount(5);
+    }
     public function test_errors_and_wrong_competition_do_not_become_demo(): void
     {
         $row=$this->matchRow(1);$row['league']['id']=999;

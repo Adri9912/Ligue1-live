@@ -43,6 +43,8 @@ class ApiClient
                 $latest = Cache::get($cacheKey);
                 if ($latest && $valid($latest)) return $result($latest, false);
                 try {
+                    // Un refus d’accès confirmé ne doit pas provoquer un nouvel appel à chaque visite.
+                    if($message=Cache::get('football:access-block:'.$this->provider))throw new ApiError($message,403);
                     $qKey = 'football:quota:'.$this->provider;
                     $q = Cache::get($qKey, []);
                     $delay = max(0, (int) config('football.spacing_ms')-(Schedule::now()-($q['lastCall']??0)));
@@ -58,8 +60,13 @@ class ApiClient
                     $response = Http::timeout(20)->connectTimeout(10)->withoutRedirecting()->withHeaders([$header=>$this->key()])->get($base.$path,$params);
                     $remaining = $response->header('x-ratelimit-requests-remaining');
                     if ($remaining !== null && preg_match('/^\d+$/',$remaining)) { $q['providerRemaining']=(int)$remaining; $q['observedAt']=Schedule::now(); Cache::forever($qKey,$q); }
-                    if (!$response->successful()) throw new ApiError('Le fournisseur de données est indisponible ou son quota est atteint.', $response->status()===429 ? 429 : 502);
                     $body = $response->json();
+                    if ($this->provider==='api-football' && is_array($body) && is_string($body['errors']['access']??null) && str_contains(strtolower($body['errors']['access']),'suspended')) {
+                        $message='L’accès à API-Football est suspendu. Les données déjà enregistrées restent consultables.';
+                        Cache::put('football:access-block:'.$this->provider,$message,900);
+                        throw new ApiError($message,403);
+                    }
+                    if (!$response->successful()) throw new ApiError('Le fournisseur de données est indisponible ou son quota est atteint.', $response->status()===429 ? 429 : 502);
                     if (!is_array($body) || !empty($body['errors'])) throw new ApiError('Accès API refusé ou réponse inattendue.');
                     if ($this->provider === 'highlightly') {
                         if (preg_match('/hidden|restricted|limited/i',$body['plan']['message']??'')) throw new ApiError('Données masquées par l’offre Highlightly.');

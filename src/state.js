@@ -5,7 +5,7 @@ import { observeMatches, resetAlertBaseline } from './notifications.js'
 export { liveStatuses, finishedStatuses, isLive, isFinished }
 function read(key, fallback) { try { return localStorage.getItem(key) || fallback } catch { return fallback } }
 export const state = reactive({
-  mode: null, source: null, season: null, teams: [], standings: [], matches: [], fetchedAt: null, stale: false,
+  mode: null, source: null, season: null, teams: [], standings: [], matches: [], fetchedAt: null, stale: false, matchesFetchedAt: null, standingsFetchedAt: null, matchesStale: false, standingsStale: false, refreshNotice: '',
   refreshMode: 'auto', manualRefresh: null, budget: null, nextRefreshAt: null, controlReady: false, refreshSerial: 0, lastRefreshWasManual: false,
   loading: true, refreshing: false, error: '', favorite: Number(read('l1-favorite', '0')) || null,
   themePreference: ['light', 'dark'].includes(read('l1-theme', 'auto')) ? read('l1-theme', 'auto') : 'auto',
@@ -30,26 +30,36 @@ export async function syncManualRefresh() {
   state.manualRefresh = data.manualRefresh
 }
 function applyResults(fixtures, overview) {
-    Object.assign(state, { teams: overview.teams, standings: overview.standings, matches: fixtures.matches, mode: overview.mode, season: overview.season, fetchedAt: Math.min(overview.fetchedAt, fixtures.fetchedAt), stale: overview.stale || fixtures.stale })
+    Object.assign(state, { teams: overview.teams, standings: overview.standings, matches: fixtures.matches, mode: overview.mode, season: overview.season, fetchedAt: Math.min(overview.fetchedAt, fixtures.fetchedAt), stale: overview.stale || fixtures.stale, matchesFetchedAt: fixtures.fetchedAt, standingsFetchedAt: overview.fetchedAt, matchesStale: fixtures.stale, standingsStale: overview.stale })
     observeMatches(fixtures.matches, state.favorite, state.mode, fixtures.stale).catch(() => {})
 }
 export function refreshManually() {
   if (pending) return pending
-  state.refreshing = true; state.error = ''
+  const previousMatches = state.matchesFetchedAt, previousStandings = state.standingsFetchedAt
+  let completed = false
+  state.refreshing = true; state.error = ''; state.refreshNotice = ''
   pending = (async () => {
     const data = await api('/api/refresh', { method: 'POST', body: {} })
     state.manualRefresh = data.manualRefresh
     applyResults(data.fixtures, { ...data, ...data.overview })
+    const updated = [state.matchesFetchedAt > previousMatches ? 'calendrier et scores' : null, state.standingsFetchedAt > previousStandings ? 'classement' : null].filter(Boolean)
+    const checkedAt = time(Date.now()).replace(':', ' h ')
+    state.refreshNotice = state.stale
+      ? `Vérifié à ${checkedAt} · Mise à jour incomplète : certaines données déjà reçues ont été conservées.`
+      : !updated.length
+        ? `Vérifié à ${checkedAt} · Données inchangées. Le cache partagé limite les appels au fournisseur.`
+        : `Vérifié à ${checkedAt} · Données plus récentes reçues : ${updated.join(', ')}.`
+    completed = true
   })().catch(error => { state.error = error.message }).finally(async () => {
     try { await syncManualRefresh() } catch { /* Le serveur reste responsable de la limite. */ }
-    state.loading = false; state.refreshing = false; state.lastRefreshWasManual = false; state.refreshSerial++; pending = null
+    state.loading = false; state.refreshing = false; state.lastRefreshWasManual = completed; state.refreshSerial++; pending = null
   })
   return pending
 }
 let pending
 export function load({ manual = false } = {}) {
   if (pending) return pending
-  state.refreshing = true; state.error = ''
+  state.refreshing = true; state.error = ''; state.refreshNotice = ''
   pending = (async () => {
     // Les résultats sont récupérés d’abord pour savoir si le classement doit être mis à jour.
     const fixtures = await api('/api/matches', { manual })

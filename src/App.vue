@@ -10,6 +10,7 @@ import { alerts } from './notifications'
 import DataControls from './components/DataControls.vue'
 import NavigationMenu from './components/NavigationMenu.vue'
 import IntroAnimation from './components/IntroAnimation.vue'
+import WelcomePrompt from './components/WelcomePrompt.vue'
 const props = defineProps({ showIntro: Boolean })
 const introVisible = ref(props.showIntro)
 async function finishIntro() {
@@ -67,5 +68,6 @@ onUnmounted(() => { clearInterval(interval); document.removeEventListener('visib
   </main>
   <nav class="mobile-nav" aria-label="Navigation mobile"><RouterLink v-for="link in primaryLinks" :key="link.to" :to="link.to" :class="{ active: link.to === '/' ? route.path === '/' || route.path.startsWith('/matchs/') : (link.to === '/classement' ? route.path.startsWith('/classement') : route.path === link.to || link.to === '/clubs' && isClubs) }"><Icon :name="link.icon" :size="21" /><span>{{ link.label }}</span></RouterLink></nav>
   <TeamPicker /><AlertToasts />
+  <WelcomePrompt v-if="!introVisible" />
   </div>
 </template>

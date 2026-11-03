@@ -1,6 +1,8 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
+import Account from './views/Account.vue'
+import Admin from './views/Admin.vue'
 import Matches from './views/Matches.vue'
 import Standings from './views/Standings.vue'
 import Team from './views/Team.vue'
@@ -15,6 +17,8 @@ import { claimIntro } from './intro-session.mjs'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/administration', component: Admin, meta: { title: 'Administration', account: true } },
+    ...[['/connexion', 'login', 'Connexion'], ['/inscription', 'register', 'Inscription'], ['/mot-de-passe/oublie', 'forgot', 'Mot de passe oublié'], ['/mot-de-passe/reinitialiser', 'reset', 'Nouveau mot de passe'], ['/mon-compte', 'profile', 'Mon compte']].map(([path, accountMode, title]) => ({ path, component: Account, meta: { account: true, accountMode, title } })),
     { path: '/', component: Matches, meta: { title: 'Matchs' } },
     { path: '/classement', component: Standings, meta: { title: 'Classement' } },
     { path: '/classement/:kind(attaques|defenses)', component: Standings, meta: { title: 'Classement des équipes' } },

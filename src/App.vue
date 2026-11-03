@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, computed, ref, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { state, load, syncStatus, favoriteTeam, toggleTheme, syncTheme } from './state'
+import { account, syncAccount } from './account'
 import Icon from './components/Icon.vue'
 import TeamPicker from './components/TeamPicker.vue'
 import AlertToasts from './components/AlertToasts.vue'
@@ -17,7 +18,7 @@ async function finishIntro() {
   document.getElementById('main')?.focus({ preventScroll: true })
 }
 const route = useRoute()
-const isInformation = computed(() => route.meta.information === true)
+const isInformation = computed(() => route.meta.information === true || route.meta.account === true)
 const isRetro = computed(() => route.path === '/retro')
 const isClubs = computed(() => route.path.startsWith('/clubs'))
 const links = [{ to: '/', label: 'Matchs', icon: 'matches' }, { to: '/classement', label: 'Classement', icon: 'table' }, { to: '/clubs', label: 'Clubs', icon: 'ball' }, { to: '/mon-equipe', label: 'Mon équipe', icon: 'heart' }, { to: '/statistiques', label: 'Statistiques', icon: 'table' }, { to: '/retro', label: 'Rétro', icon: 'clock' }]
@@ -30,6 +31,7 @@ async function checkUpdates() {
   if (checking) return
   checking = true
   try {
+    syncAccount().catch(() => {})
     await syncStatus()
     if (state.mode === 'api' && state.refreshMode === 'auto' && state.nextRefreshAt !== null && Date.now() >= state.nextRefreshAt && Date.now() - lastAutomaticAttempt >= 600000 && (!document.hidden || (alerts.enabled && state.favorite))) {
       lastAutomaticAttempt = Date.now(); await load()
@@ -38,6 +40,7 @@ async function checkUpdates() {
   finally { checking = false }
 }
 onMounted(async () => {
+  syncAccount().catch(() => {})
   syncTheme()
   document.addEventListener('visibilitychange', syncTheme)
   try { await syncStatus() } catch (error) { state.error = error.message }
@@ -54,6 +57,7 @@ onUnmounted(() => { clearInterval(interval); document.removeEventListener('visib
   <main id="main" class="shell" tabindex="-1">
     <div v-if="state.mode === 'demo' && !isRetro && !isInformation" class="demo-notice"><span class="notice-icon"><Icon name="info" :size="16" /></span><p><strong>Mode démonstration</strong><span> · Scores, joueurs et classement fictifs. Le scénario en direct est figé.</span></p><span class="demo-tag">DÉMO</span></div>
     <DataControls v-if="!isRetro && !isClubs && !isInformation" />
+    <p v-if="state.favoriteError && !state.pickerOpen" class="alert error" role="alert">{{ state.favoriteError }}</p>
     <div v-if="state.storageError" class="alert warning" role="status">{{ state.storageError }}</div>
     <div v-if="state.error && !isRetro && !isInformation" class="alert error" role="alert"><div><strong>Le chargement n’a pas abouti.</strong><p>{{ state.error }}</p></div><button class="button" :disabled="state.refreshing || state.refreshMode === 'pause'" @click="load({ manual: true })">{{ state.refreshing ? 'Chargement…' : 'Réessayer' }}</button></div>
     <div v-if="state.loading && !isRetro && !isInformation" class="loading-state" role="status"><span class="loader"></span><h1>On prépare le terrain…</h1><p>Chargement des rencontres et du classement.</p></div>

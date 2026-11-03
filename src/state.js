@@ -1,4 +1,5 @@
-import { reactive, computed } from 'vue'
+import { reactive, computed, watch } from 'vue'
+import { account, accountRequest } from './account.js'
 import { themeAt } from './theme.js'
 import { liveStatuses, finishedStatuses, isLive, isFinished } from './football.js'
 import { observeMatches, resetAlertBaseline } from './notifications.js'
@@ -8,26 +9,53 @@ export const state = reactive({
   mode: null, source: null, season: null, teams: [], standings: [], matches: [], fetchedAt: null, stale: false, matchesFetchedAt: null, standingsFetchedAt: null, matchesStale: false, standingsStale: false, refreshNotice: '',
   refreshMode: 'auto', manualRefresh: null, budget: null, nextRefreshAt: null, controlReady: false, refreshSerial: 0, lastRefreshWasManual: false,
   matchFilters: { filter: 'all', round: null, selectedTeam: '', followCurrentRound: true },
-  loading: true, refreshing: false, error: '', favorite: Number(read('l1-favorite', '0')) || null,
+  loading: true, refreshing: false, error: '', favorite: null, favoriteSaving: false, favoriteError: '',
   themePreference: ['light', 'dark'].includes(read('l1-theme', 'auto')) ? read('l1-theme', 'auto') : 'auto',
   theme: document.documentElement.dataset.theme || themeAt(read('l1-theme', 'auto')), pickerOpen: false, storageError: '',
 })
 export const favoriteTeam = computed(() => state.teams.find(t => t.id === state.favorite))
-export function chooseFavorite(id) { state.favorite = id; persist('l1-favorite', id || ''); persist('l1-favorite-source', state.source || 'demo'); state.pickerOpen = false; resetAlertBaseline(id, state.matches) }
+watch(() => [account.ready, account.enabled, account.user?.id, account.following, state.source], () => {
+  if (!account.ready) return
+  const primary = account.user && account.following.teams.find(t => t.id === account.following.primaryTeamId)
+  const next = account.enabled !== false
+    ? account.following.source === state.source ? primary?.providerId || null : null
+    : read('l1-favorite-source', 'api-football') === state.source ? Number(read('l1-favorite', '0')) || null : null
+  if (next !== state.favorite) { state.favorite = next; resetAlertBaseline(next, state.matches) }
+})
+watch(() => account.user?.id, () => { state.pickerOpen = false; state.manualRefresh = null; state.refreshNotice = '' })
+export async function chooseFavorite(id) {
+  if (state.favoriteSaving) return
+  state.favoriteError = ''
+  if (account.enabled !== false) {
+    if (!account.user) { state.pickerOpen = true; return }
+    state.favoriteSaving = true
+    try { await accountRequest('/primary-team', { method: 'PUT', body: { team_id: id || null } }); state.pickerOpen = false }
+    catch (error) { state.favoriteError = error.message }
+    finally { state.favoriteSaving = false }
+    return
+  }
+  if (!account.ready) { state.pickerOpen = true; return }
+  state.favorite = id; persist('l1-favorite', id || ''); persist('l1-favorite-source', state.source || 'demo'); state.pickerOpen = false; resetAlertBaseline(id, state.matches)
+}
 function persist(key, value) { try { localStorage.setItem(key, String(value)) } catch { state.storageError = 'Le navigateur ne permet pas de mémoriser vos préférences. Elles restent actives pendant cette visite.' } }
 export function syncTheme() { state.theme = themeAt(state.themePreference); document.documentElement.dataset.theme = state.theme }
 export function setTheme(value) { state.themePreference = ['light', 'dark'].includes(value) ? value : 'auto'; persist('l1-theme', state.themePreference); syncTheme() }
 export function toggleTheme() { setTheme(state.theme === 'dark' ? 'light' : 'dark') }
 export async function api(path, { manual = false, method = 'GET', body } = {}) {
-  const response = await fetch(path, { method, signal: AbortSignal.timeout(90000), headers: { ...(manual ? { 'x-l1-manual-refresh': '1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) })
   let data
-  try { data = await response.json() } catch { throw new Error('Le serveur ne répond pas correctement. Vérifiez qu’il est démarré.') }
+  if (path.startsWith('/api/account/')) {
+    data = await accountRequest(path.slice('/api/account'.length), { method, body, timeoutMs: 90000 })
+  } else {
+    const response = await fetch(path, { method, signal: AbortSignal.timeout(90000), headers: { ...(manual ? { 'x-l1-manual-refresh': '1' } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) })
+    try { data = await response.json() } catch { throw new Error('Le serveur ne répond pas correctement. Vérifiez qu’il est démarré.') }
+    if (!response.ok) throw new Error(data.error || 'Impossible de charger les données.')
+  }
   if (data.refreshMode) { state.refreshMode = data.refreshMode; state.budget = data.budget; state.nextRefreshAt = data.nextRefreshAt; state.controlReady = true }
-  if (!response.ok) throw new Error(data.error || 'Impossible de charger les données.')
   return data
 }
 export async function syncManualRefresh() {
-  const data = await api('/api/refresh')
+  if (account.enabled !== false && !account.user) { state.manualRefresh = null; return }
+  const data = await api(account.enabled ? '/api/account/refresh' : '/api/refresh')
   state.manualRefresh = data.manualRefresh
 }
 function applyResults(fixtures, overview) {
@@ -36,11 +64,12 @@ function applyResults(fixtures, overview) {
 }
 export function refreshManually() {
   if (pending) return pending
+  if (account.enabled !== false && !account.user) { state.pickerOpen = true; return Promise.resolve() }
   const previousMatches = state.matchesFetchedAt, previousStandings = state.standingsFetchedAt
   let completed = false
   state.refreshing = true; state.error = ''; state.refreshNotice = ''
   pending = (async () => {
-    const data = await api('/api/refresh', { method: 'POST', body: {} })
+    const data = await api(account.enabled ? '/api/account/refresh' : '/api/refresh', { method: 'POST', body: {} })
     state.manualRefresh = data.manualRefresh
     applyResults(data.fixtures, { ...data, ...data.overview })
     const updated = [state.matchesFetchedAt > previousMatches ? 'calendrier et scores' : null, state.standingsFetchedAt > previousStandings ? 'classement' : null].filter(Boolean)
@@ -71,7 +100,7 @@ export function load({ manual = false } = {}) {
 }
 export async function syncStatus() {
   const data = await api('/api/status')
-  if (state.source !== data.source && read('l1-favorite-source', 'api-football') !== data.source) { state.favorite = null; persist('l1-favorite', ''); resetAlertBaseline(null, []) }
+  if (account.ready && !account.enabled && state.source !== data.source && read('l1-favorite-source', 'api-football') !== data.source) { state.favorite = null; persist('l1-favorite', ''); resetAlertBaseline(null, []) }
   state.source = data.source; state.mode = data.mode; state.season = data.season
   return data
 }

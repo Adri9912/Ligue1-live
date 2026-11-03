@@ -28,3 +28,47 @@ Artisan::command('football:import-node-cache {--from= : Dossier du cache Node, p
     }
     $this->info($count.' réponses importées. Aucun appel API. Les quotas existants ne sont jamais réduits.');return 0;
 })->purpose('Importer le cache privé Node sans perdre les quotas déjà consommés');
+
+Artisan::command('football:reminders',function() {
+    \App\Football\ReminderActivity::start('prepare');
+    if(!\App\Football\Reminders::available()||\App\Football\ApiClient::mode()==='pause') {
+        \App\Football\ReminderActivity::finish('prepare','skipped');$this->info('Rappels désactivés ou en pause.');return 0;
+    }
+    try {
+        \App\Models\NotificationDelivery::where('status','sending')->where('updated_at','<',now()->subMinutes(5))->update(['status'=>'uncertain','last_error'=>'worker_interrupted']);
+        $count=app(\App\Football\Reminders::class)->collect();
+        \App\Football\ReminderActivity::finish('prepare','success',$count);$this->info($count.' rappel(s) préparé(s).');return 0;
+    } catch(\Throwable $e) {
+        \App\Football\ReminderActivity::finish('prepare','failed');$this->error('La préparation des rappels a échoué. Vérifiez les accès aux données et à la base.');return 1;
+    }
+})->purpose('Préparer les rappels consentis deux heures avant les matchs');
+Artisan::command('football:send-reminders',function() {
+    \App\Football\ReminderActivity::start('mail');
+    if(!\App\Football\Reminders::available()||\App\Football\ApiClient::mode()==='pause') {
+        \App\Football\ReminderActivity::finish('mail','skipped');$this->info('Rappels désactivés ou en pause.');return 0;
+    }
+    try {
+        $code=$this->call('queue:work',['connection'=>'database','--queue'=>'mail','--stop-when-empty'=>true,'--max-time'=>45,'--max-jobs'=>25,'--timeout'=>25]);
+        \App\Football\ReminderActivity::finish('mail',$code===0?'success':'failed');return $code;
+    } catch(\Throwable $e) {
+        \App\Football\ReminderActivity::finish('mail','failed');$this->error('Le traitement de la file d’e-mails a échoué. Vérifiez la base et la configuration du worker.');return 1;
+    }
+})->purpose('Traiter la file mail et enregistrer son activité, sans processus permanent');
+if(config('accounts.enabled')&&config('reminders.enabled')) {
+    \Illuminate\Support\Facades\Schedule::command('football:reminders')->everyMinute()->withoutOverlapping(5);
+    \Illuminate\Support\Facades\Schedule::command('football:send-reminders')->everyMinute()->withoutOverlapping(5);
+}
+
+Artisan::command('account:make-admin {email}',function() {
+    $email=\Illuminate\Support\Str::lower(trim($this->argument('email')));
+    $user=\App\Models\User::where('email',$email)->first();
+    if(!$user||!$user->active||!$user->hasVerifiedEmail()) { $this->error('Un compte existant, actif et vérifié est requis.');return 1; }
+    if($user->role==='admin') { $this->info('Ce compte est déjà administrateur.');return; }
+    if(!$this->confirm('Accorder les droits administrateur à ce compte ?'))return 1;
+    \Illuminate\Support\Facades\DB::transaction(function()use($user) {
+        $locked=\App\Models\User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+        if(!$locked->active||!$locked->hasVerifiedEmail())throw new \RuntimeException('Le compte a changé. Recommencez la vérification.');
+        $locked->forceFill(['role'=>'admin'])->save();
+    });
+    $this->info('Droits administrateur accordés.');
+})->purpose('Promouvoir un compte vérifié depuis un terminal privé');

@@ -7,7 +7,7 @@ Le site utilise **Laravel et PHP**. Documentation de référence : [PHP](https:/
 1. Choisir PHP **8.5**, correspondant au verrou Composer actuel. Vérifier l’extension intl et les extensions Laravel avec `composer check-platform-reqs`.
 2. Exécuter les tests JavaScript et PHP, puis `npm ci` et `npm run build`. La compilation peut être faite localement ou sur GitHub Actions ; `dist/` peut être envoyé déjà compilé sur l’hébergement.
 3. Envoyer les sources, `dist/` et les ressources publiques dans un dossier dédié, par exemple `/home/COMPTE/www/ligue1-live`. Ne pas envoyer `.git`, `node_modules` ou le `.env` local.
-4. Installer les dépendances PHP avec `composer install --no-dev --prefer-dist --optimize-autoloader`. Ne pas exécuter de migration de base de données : l’application n’en utilise pas.
+4. Installer les dépendances PHP avec `composer install --no-dev --prefer-dist --optimize-autoloader`. Pour la version historique avec comptes désactivés, aucune migration n’est nécessaire. La V2 nécessite une intervention séparée et autorisée ; voir COMPTES.md.
 
 ## Configurer le site
 
@@ -93,3 +93,67 @@ Pour changer le réglage : se connecter en SSH, lancer `cd ~/www/ligue1-live && 
 `GET /api/refresh` crée un identifiant aléatoire dans un cookie chiffré, HttpOnly et SameSite=Lax, puis renvoie le nombre restant sans appeler les fournisseurs. `POST /api/refresh` vérifie l’origine, le cookie et le mode serveur ; un verrou de cache réserve l’un des 10 clics avant de charger les matchs et le classement avec les délais et budgets habituels. Le compteur est conservé côté serveur et revient à 10 à minuit UTC. Un clic accepté compte aussi en cas d’échec du fournisseur ; aucune remise à zéro des quotas sportifs n’est effectuée.
 
 Ce compteur limite les clics d’un navigateur, pas l’identité d’une personne : sans comptes utilisateurs, effacer les cookies ou changer de navigateur crée un autre identifiant. Le budget quotidien de 90 appels par fournisseur et le cache partagé restent les protections globales. Les onglets d’un même navigateur partagent leur cookie ; le serveur impose la limite même si le compteur d’un autre onglet n’a pas encore été actualisé.
+
+## V2 comptes en préparation locale
+
+Le fonctionnement décrit ci-dessus correspond à la version publique historique. La V2 ajoute des migrations MySQL, favoris et compteurs par utilisateur ; elle reste désactivée par défaut avec ACCOUNTS_ENABLED=false. Voir [COMPTES.md](COMPTES.md) pour les conditions avant activation. Le script de restauration actuel ne sauvegarde pas la base et aucune migration de production n’a été autorisée ou exécutée pour ce lot.
+
+## Préparation des rappels V2 (non activés en production)
+
+Après validation de la V2, sauvegarde/restauration MySQL vérifiée, migrations autorisées et configuration privée SMTP : définir ACCOUNTS_ENABLED=true, REMINDERS_ENABLED=true, SESSION_DRIVER=database et MAIL_MAILER=smtp. APP_URL doit être l’adresse publique HTTPS. Conserver tous les identifiants dans le .env du serveur ; ne pas envoyer le fichier local.
+
+Le planificateur Laravel lance football:reminders, puis un worker database limité à la file mail, pendant au plus 45 secondes (ou 25 jobs), avec arrêt si la file est vide. Aucun worker permanent n’est nécessaire. Ne pas lancer en parallèle un second worker ni installer un daemon pour cette première version.
+
+Tâche à créer ultérieurement dans alwaysdata → Tâches planifiées, toutes les minutes, après validation explicite :
+
+```bash
+cd /home/ligue1-live/www/ligue1-live && php artisan schedule:run
+```
+
+Vérifier la même version PHP que le site. Après chaque modification privée : php artisan config:cache, sans cache:clear. Contrôler schedule:list, les tables jobs / notification_deliveries et la livraison à une adresse autorisée avant toute ouverture. schedule:run ne doit être exécuté que par la tâche choisie pour éviter des lancements concurrents ; les commandes ont également un verrou anti-chevauchement.
+
+Les modes et budgets football restent prioritaires. Les envois dépendent des données récentes et du consentement ; ils ne sont pas garantis à la seconde. Le code n’installe aucune tâche à distance et le déploiement existant n’exécute toujours aucune migration.
+
+## Sauvegarde et contrôle V2 avant activation
+
+Commandes ajoutées, privées et sans endpoint HTTP :
+
+```bash
+php artisan app:check-v2
+php artisan app:backup-db
+```
+
+Le contrôle vérifie les tables et paramètres sans migrer, envoyer d’e-mail ni appeler le fournisseur. En production, il exige HTTPS, débogage désactivé, cookies Secure et le nom de base ligue1-live_ligue1. Le type réel chez alwaysdata est MariaDB, compatible avec la connexion MySQL Laravel ; vérifier la version effective avant migration. [Documentation alwaysdata](https://help.alwaysdata.com/fr/docs/hebergement-web/bases-de-donnees/mariadb/).
+
+La sauvegarde utilise le client mysqldump installé, sans mot de passe dans la ligne de commande. Le fichier d’identifiants temporaire est privé puis supprimé, y compris en cas d’échec. Le SQL est compressé sous storage/app/private/backups, hors de public et ignoré par Git ; dossier 700, fichier 600. Aucun CREATE DATABASE/USE n’est ajouté au dump, pour permettre une restauration vers une base de recette distincte. Le fichier peut contenir des données personnelles : il doit rester privé. Pas de suppression automatique des sauvegardes ; gérer leur conservation selon l’espace disponible.
+
+La sauvegarde a été réellement restaurée en local dans une base temporaire isolée, avec comparaison de toutes les tables et de leurs nombres de lignes. Cela ne valide pas encore une restauration sur le serveur alwaysdata. Le service fournit également des sauvegardes quotidiennes, accessibles dans son interface ; vérifier leur présence réelle. [Sauvegardes et restauration alwaysdata](https://help.alwaysdata.com/fr/docs/hebergement-web/sauvegardes/restaurer-un-site/).
+
+Ordre d’intervention de production après accord de mise en ligne :
+
+1. Rétablir l’accès SSH, vérifier version PHP, extensions, espace libre, mysqldump et accès à la base depuis le serveur. Ne jamais recopier les accès MySQL locaux.
+2. Vérifier les sauvegardes et produire un export privé de la base existante avant toute migration. Tester la restauration dans une base séparée disposant de droits propres ; ne pas restaurer sur la base active pour une recette.
+3. Installer le code validé pendant une maintenance ; migrations uniquement additives avec php artisan migrate --force après vérification du nom de base. Ne jamais employer migrate:fresh en production. Le script de déploiement existant ne lance aucune migration automatiquement.
+4. Recontrôler les tables avec app:check-v2, activer les comptes/sessions et SMTP dans la configuration privée, vérifier les liens sur le vrai domaine HTTPS, puis créer le premier administrateur par la commande privée.
+5. Tester un rappel à une adresse autorisée, puis activer une seule tâche schedule:run dans alwaysdata. Aucun daemon permanent. La planification minute par minute suit la [documentation Laravel](https://laravel.com/docs/13.x/scheduling).
+6. En cas d’échec, fermer les comptes et rappels et restaurer le code précédent. Ne pas supposer que le rollback du code restaure les données ; une restauration de base exige une décision séparée tenant compte des nouvelles inscriptions.
+
+État de cette session : préparation locale terminée, connexion SSH automatique initiale refusée. Aucune migration ni tâche de production exécutée. La clé de maintenance locale dédiée reste hors Git ; seule sa partie publique peut être ajoutée à authorized_keys par le propriétaire.
+
+### Préparation serveur en cours le 3 novembre 2026
+
+Accès SSH de maintenance rétabli. PHP 8.5.12, Laravel 13.39.0, mysql et mysqldump présents. Un dossier privé .ligue1-v2-preparation, hors de www, contient le contrôle scripts/prepare-alwaysdata-v2.php et sa configuration privée ; il ne modifie ni le .env actif ni le site. Ce contrôle peut sauvegarder la base attendue avec --backup, sans migration ou activation de tâche. Les identifiants MySQL de préparation sont encore refusés (1045) : corriger les accès avant de relancer. Aucun export de production n’a été obtenu à ce stade.
+
+Le transport SMTP a été authentifié depuis Alwaysdata avec la configuration privée de préparation, sans envoi. Le site public /up répond toujours HTTP 200.
+
+### Contrôle réussi après correction des accès
+
+Le 3 novembre 2026, les identifiants corrigés ont permis la connexion depuis Alwaysdata à ligue1-live_ligue1 : serveur 11.8.9-MariaDB, aucune table. La commande privée de préparation avec --backup a créé un export compressé sous .ligue1-v2-preparation/backups. L’authentification SMTP de préparation a également réussi depuis l’hébergement. Ces résultats remplacent le blocage 1045 indiqué plus haut.
+
+Le site actif reste dans sa configuration historique ; aucune migration, activation de compte ou tâche planifiée n’a été exécutée. La mise en ligne V2, avec migrations et configuration active, exige encore l’accord du propriétaire. Le dossier privé de préparation est exclu du site public et du déploiement Git ; le nettoyer après la mise en ligne validée, en conservant les sauvegardes nécessaires selon la politique choisie.
+
+### Contrôler la tâche de rappels après activation
+
+La tâche alwaysdata reste un seul php artisan schedule:run par minute. Laravel appelle maintenant football:reminders puis football:send-reminders, qui enveloppe queue:work database --queue=mail avec les limites précédentes et enregistre le démarrage/la fin. Utiliser cette enveloppe pour conserver la visibilité du traitement ; un worker démarré directement par queue:work n’actualise pas ce témoin.
+
+Dans l’administration, les deux derniers passages doivent être récents. Au-delà de cinq minutes, vérifier la tâche alwaysdata, son répertoire courant, sa version PHP et ses droits sur le cache. En mode Pause ou rappels désactivés, l’arrêt est explicitement indiqué. La consultation du panneau n’exécute pas le planificateur. Le cache et ces témoins restent sur le serveur entre déploiements ; aucun cache:clear à effectuer.

@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+require __DIR__.'/accounts.php';
 Route::get('/assets/{file}', function (string $file) {
     $extension=pathinfo($file,PATHINFO_EXTENSION);
     $types=['js'=>'text/javascript','css'=>'text/css','woff2'=>'font/woff2','png'=>'image/png','svg'=>'image/svg+xml'];

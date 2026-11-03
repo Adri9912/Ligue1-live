@@ -26,12 +26,29 @@ jobs:
 
   laravel:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: ligue1_live_test
+          MYSQL_ROOT_PASSWORD: ci-only-password
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping -h localhost -pci-only-password" --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      APP_URL: http://localhost
+      DB_HOST: 127.0.0.1
+      DB_USERNAME: root
+      DB_PASSWORD: ci-only-password
+      DB_DATABASE: ligue1_live_test
+      DB_CONNECTION: mysql
+      ACCOUNTS_ENABLED: true
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.5'
-          extensions: mbstring, curl, dom, xml, fileinfo, intl
+          extensions: mbstring, curl, dom, xml, fileinfo, intl, pdo_mysql
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: php artisan test

@@ -811,3 +811,82 @@
  .home-dashboard .match-section .filter-tabs { flex-wrap:wrap; justify-content:flex-start; gap:5px; }
  .home-dashboard .match-section .filter-tabs button { flex:1 0 auto; }
 }
+
+/* Espace compte : composants existants, champs lisibles et utilisables au clavier. */
+.account-page { max-width:960px; margin:0 auto; }
+.account-panel { padding:24px; margin-bottom:20px; min-width:0; }
+.account-panel h2 { font-size:21px; margin-bottom:16px; }
+.account-panel p { overflow-wrap:anywhere; font-size:14px; margin-bottom:14px; }
+.account-panel label { display:grid; gap:8px; font-size:14px; font-weight:600; margin:16px 0; }
+.account-panel input { width:100%; min-width:0; min-height:46px; border:1px solid var(--line); border-radius:8px; background:var(--soft); color:var(--ink); padding:11px 12px; font-size:16px; }
+.account-panel .account-help { font-size:13px; color:var(--muted); }
+.account-page>form { max-width:500px; margin-inline:auto; }
+.account-links { display:flex; align-items:center; gap:16px; justify-content:space-between; flex-wrap:wrap; margin-top:18px; font-size:14px; }
+.account-links a { color:var(--green-ink); text-decoration:underline; }
+.account-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.account-identity { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+.account-sessions { list-style:none; padding:0; margin:0; }
+.account-sessions li { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; border-bottom:1px solid var(--line); padding:12px 0; font-size:14px; }
+.account-sessions span { color:var(--muted); }
+.account-danger { border-color:#b25b52; }
+@media(max-width:650px) { .account-grid { grid-template-columns:1fr; gap:0; } .account-panel { padding:20px 16px; } }
+
+.followed-clubs { padding:24px; margin:24px 0; }
+.followed-clubs>p { font-size:14px; margin:10px 0; }
+.followed-clubs ul { list-style:none; padding:0; margin:0; }
+.followed-clubs li { padding:16px 0; border-bottom:1px solid var(--line); }
+.followed-team,.followed-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.followed-team strong { font-size:15px; }
+.followed-clubs .text-button { white-space:normal; text-align:left; font-size:13px; }
+.followed-add { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:20px; }
+.followed-add label { flex-basis:100%; font-size:14px; font-weight:650; }
+.followed-add select { flex:1; min-width:0; min-height:44px; padding:9px; color:var(--ink); background:var(--soft); border:1px solid var(--line); border-radius:7px; font-size:16px; }
+.favorite-signup p { margin:14px 0; font-size:14px; line-height:1.6; }
+@media(max-width:600px) { .followed-clubs { padding:18px 16px; } .refresh-signin { font-size:12px; } .followed-add select { flex-basis:100%; } }
+
+.team-following-details { margin:20px 0; }
+.team-following-details>summary { cursor:pointer; padding:16px; font-size:14px; font-weight:650; }
+.team-following-details>summary span { margin-left:8px; color:var(--muted); }
+.team-following-details>.followed-clubs { margin:0; border:0; border-top:1px solid var(--line); border-radius:0 0 12px 12px; }
+
+.reminder-choice { display:flex; align-items:flex-start; gap:10px; margin:12px 0; font-size:14px; line-height:1.5; cursor:pointer; }
+.reminder-choice input { width:19px; height:19px; flex:0 0 19px; accent-color:var(--green-ink); margin-top:2px; }
+.followed-clubs .reminder-help { font-size:12px; line-height:1.6; color:var(--muted); margin-top:18px; }
+
+.guest-continue { display:block; margin-top:18px; color:var(--muted); font-size:14px; line-height:1.5; text-align:left; text-decoration:underline; text-underline-offset:3px; }
+
+.account-entry-links { flex-direction:column; align-items:flex-start; gap:10px; }
+
+/* Administration : mêmes panneaux et thèmes que l’espace personnel. */
+.admin-page { max-width:1100px; margin:auto; }
+.admin-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:20px; }
+.admin-stats article { padding:20px; display:grid; gap:8px; }
+.admin-stats strong { font-size:28px; }
+.admin-stats span { font-size:14px; color:var(--muted); }
+.admin-budget,.admin-users,.admin-deliveries { list-style:none; padding:0; margin:0; }
+.admin-budget li,.admin-users li { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; padding:16px 0; border-bottom:1px solid var(--line); }
+.admin-budget li span { font-size:14px; }
+.admin-users li>div { flex:1; min-width:0; overflow-wrap:anywhere; }
+.admin-users p { margin:6px 0; font-size:13px; color:var(--muted); }
+.admin-search { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin-bottom:16px; }
+.admin-search label { flex-basis:100%; margin:0; }
+.admin-search input { flex:1; width:auto; }
+.admin-confirm { border:1px solid var(--line); border-radius:8px; margin-top:20px; padding:18px; }
+.admin-confirm h3 { overflow-wrap:anywhere; }
+.admin-deliveries li { display:grid; gap:8px; padding:16px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; font-size:14px; }
+.admin-deliveries small { font-size:13px; color:var(--muted); }
+.admin-pagination { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-top:18px; font-size:14px; }
+.admin-page select { padding:10px; border:1px solid var(--line); background:var(--soft); color:var(--ink); border-radius:8px; max-width:100%; }
+@media(max-width:650px) { .admin-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .admin-stats article { padding:16px; } }
+
+.reminder-activity-list { list-style:none; padding:0; margin:0; }
+.reminder-activity-list>li { padding:18px 0; border-top:1px solid var(--line); }
+.reminder-activity-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.reminder-activity-heading h3 { font-size:16px; }
+.reminder-activity-state { padding:6px 10px; border-radius:6px; background:var(--soft); font-size:13px; }
+.reminder-activity-list [data-state=healthy] .reminder-activity-state { color:var(--green-ink); }
+.reminder-activity-list [data-state=failed] .reminder-activity-state,.reminder-activity-list [data-state=late] .reminder-activity-state { color:var(--ink); background:color-mix(in srgb,#db6c47 22%,var(--soft)); }
+.reminder-activity-list dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:16px; }
+.reminder-activity-list dt { color:var(--muted); font-size:13px; margin-bottom:5px; }
+.reminder-activity-list dd { margin:0; font-size:14px; overflow-wrap:anywhere; }
+@media(max-width:450px) { .reminder-activity-list dl { grid-template-columns:1fr; } }

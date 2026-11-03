@@ -70,3 +70,7 @@ L’introduction validée est intégrée au démarrage de Vue : quatre secondes 
 La clé `l1-intro-last-shown-v1` dans `localStorage` mémorise le début de lecture pour **30 minutes**, même lorsque l’utilisateur passe l’animation. Les actualisations, changements de page et nouveaux onglets du même site n’entraînent pas de nouvelle lecture pendant ce délai. Les visites ne prolongent pas ce délai. Web Locks sérialise les ouvertures simultanées lorsque le navigateur le permet. La mémorisation reste propre au navigateur, au profil et à l’origine (protocole, domaine, port) ; si le stockage est bloqué, l’intro peut se rejouer à chaque chargement mais n’empêche jamais l’accès.
 
 Le composant `src/components/IntroAnimation.vue` contient les styles isolés et réutilise l’icône ballon de l’application. Le rendu du ballon est dans `src/intro/ball.mjs` et la règle des 30 minutes dans `src/intro-session.mjs`, couverte par `tests/intro-session.test.mjs`. Aucun changement au backend ni aux fournisseurs de données. Le push sur une branche de travail ne déploie pas cette fonctionnalité ; le workflow existant déploie uniquement depuis `main`.
+
+## Comptes et favoris
+
+Comptes, favoris multi-clubs, rappels par e-mail et administration. Activation contrôlée avec ACCOUNTS_ENABLED et REMINDERS_ENABLED après configuration de MySQL et SMTP. Configuration MySQL, portée des tests et conditions de mise en ligne : [docs/COMPTES.md](docs/COMPTES.md). Décisions et fonctionnalités restantes : [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).

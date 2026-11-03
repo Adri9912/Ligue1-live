@@ -8,7 +8,7 @@ class ManualRefreshTest extends TestCase
     private const VISITOR='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
     protected function setUp(): void {
         parent::setUp();$this->withCredentials();
-        config(['football.provider'=>'highlightly','football.highlightly_key'=>'fake-private-key','football.api_football_key'=>'','football.refresh_mode'=>'auto','football.season'=>2026,'football.spacing_ms'=>0]);
+        config(['accounts.enabled'=>false,'football.provider'=>'highlightly','football.highlightly_key'=>'fake-private-key','football.api_football_key'=>'','football.refresh_mode'=>'auto','football.season'=>2026,'football.spacing_ms'=>0]);
         Cache::flush();Http::preventStrayRequests();
         $this->travelTo(now()->utc()->setDate(2026,10,30)->setTime(12,0));
         $team=['id'=>1,'name'=>'A'];

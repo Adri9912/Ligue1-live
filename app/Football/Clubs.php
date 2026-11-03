@@ -30,6 +30,11 @@ class Clubs
             return [...$match,'venue'=>$stadium,'venueSource'=>'club'];
         },$matches);
     }
+    public static function cachedApiFootballId(array $team): ?int {
+        $registry=(new ApiClient('api-football'))->cached('teams',['country'=>'France']);
+        $record=$registry?self::record($team['fullName']??$team['name'],$registry['data']):null;
+        return $record['team']['id']??null;
+    }
     public static function cachedSquad(array $team): array {
         $client=new ApiClient('api-football');
         $registry=$client->cached('teams',['country'=>'France']);

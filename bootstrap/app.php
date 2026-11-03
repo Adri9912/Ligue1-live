@@ -13,9 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectGuestsTo(fn (Request $request) => '/connexion?redirect='.rawurlencode($request->getRequestUri()));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (\Illuminate\Routing\Exceptions\InvalidSignatureException $e, Request $request) {
+            if ($request->is('api/account/email/verify/*') && !$request->expectsJson()) return redirect('/mon-compte?adresse=lien-invalide');
+        });
         $exceptions->render(function (\App\Football\ApiError $e, Request $request) {
             try { $meta=(new \App\Football\League)->metadata(); } catch (\Throwable) { $meta=[]; }
             return response()->json([...$meta,'error' => $e->getMessage()], $e->getStatusCode())->header('Cache-Control', 'no-store');

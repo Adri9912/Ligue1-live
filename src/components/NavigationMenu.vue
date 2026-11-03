@@ -2,6 +2,7 @@
 import { ref, watch, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { state, favoriteTeam, setTheme } from '../state'
+import { account } from '../account'
 import Icon from './Icon.vue'
 import Badge from './Badge.vue'
 
@@ -45,7 +46,7 @@ onUnmounted(closed)
   <dialog id="navigation-menu" ref="dialog" class="navigation-menu" aria-labelledby="navigation-menu-title" @close="closed" @click="outside" @keydown="trapTab">
     <div class="navigation-menu-content">
       <div class="navigation-menu-heading"><div><span class="eyebrow">LIGUE 1 LIVE</span><h2 id="navigation-menu-title">Votre terrain de jeu<span class="heading-dot">.</span></h2></div><button class="icon-button" aria-label="Fermer le menu" autofocus @click="close"><Icon name="close" /></button></div>
-      <nav class="drawer-links" aria-label="Rubriques du site"><RouterLink v-for="link in links" :key="link.to" :to="link.to" :class="{ 'drawer-link-active': active(link.to) }" :aria-current="active(link.to) ? 'page' : undefined" @click="close"><Icon :name="link.icon" :size="21" /><span>{{ link.label }}</span><Icon name="arrow" :size="16" /></RouterLink></nav>
+      <nav class="drawer-links" aria-label="Rubriques du site"><RouterLink v-if="account.enabled" :to="account.user ? '/mon-compte' : '/connexion'" @click="close"><Icon name="heart" :size="21" /><span>{{ account.user ? 'Mon compte' : 'Se connecter / S’inscrire' }}</span><Icon name="arrow" :size="16" /></RouterLink><RouterLink v-if="account.user?.role === 'admin' && account.user?.email_verified_at" to="/administration" @click="close"><Icon name="table" :size="21" /><span>Administration</span><Icon name="arrow" :size="16" /></RouterLink><RouterLink v-for="link in links" :key="link.to" :to="link.to" :class="{ 'drawer-link-active': active(link.to) }" :aria-current="active(link.to) ? 'page' : undefined" @click="close"><Icon :name="link.icon" :size="21" /><span>{{ link.label }}</span><Icon name="arrow" :size="16" /></RouterLink></nav>
       <section class="drawer-preferences" aria-labelledby="drawer-preferences-title"><h3 id="drawer-preferences-title">Réglages</h3><button class="drawer-preference" :disabled="!state.teams.length" @click="chooseClub"><Badge v-if="favoriteTeam" :team="favoriteTeam" size="tiny" /><Icon v-else name="heart" /><span><strong>{{ favoriteTeam ? favoriteTeam.name : 'Choisir mon club' }}</strong><small>{{ favoriteTeam ? 'Changer mon équipe favorite' : 'Retrouver mon équipe facilement' }}</small></span><Icon name="arrow" :size="16" /></button><label class="drawer-theme"><span>Thème du site</span><select :value="state.themePreference" @change="setTheme($event.target.value)"><option value="auto">Automatique · 8 h – 18 h</option><option value="light">Jour</option><option value="dark">Nuit</option></select><small>Automatique : jour de 8 h à 18 h, nuit le reste du temps. Heure de votre appareil.</small></label></section>
       <p class="drawer-footer">Une seule compétition. Toute votre passion.</p>
     </div>

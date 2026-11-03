@@ -26,6 +26,8 @@ test('actualisation manuelle : conserve la page, la saison et le compteur après
   }
   for (const name of names) Object.defineProperty(globalThis, name, { configurable: true, value: values[name] })
   try {
+    const { account } = await import('../src/account.js')
+    account.ready = true; account.enabled = false
     const { state, load, refreshManually } = await import('../src/state.js')
     await load()
     assert.equal(state.mode, 'api')

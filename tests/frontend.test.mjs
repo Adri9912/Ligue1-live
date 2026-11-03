@@ -53,3 +53,12 @@ test('portraits : nom et numéro concordants, homonymes et identifiants des four
   assert.equal(matchSquadPlayer({ name: 'O. Dembele' }, [...squad, squad[0]]), null)
   assert.equal(matchSquadPlayer({ name: 'O. Dembele' }, []), null)
 })
+
+
+test('portraits : alias transmis par le serveur, numéro concordant et ambiguïté refusée', async () => {
+ const {matchSquadPlayer}=await import('../src/players.js')
+ const player={id:2225,name:'Lucas Beraldo',aliases:['Beraldo'],number:4}
+ assert.equal(matchSquadPlayer({name:'Beraldo',number:4},[player])?.id,2225)
+ assert.equal(matchSquadPlayer({name:'Beraldo',number:5},[player]),null)
+ assert.equal(matchSquadPlayer({name:'Beraldo',number:4},[player,{...player,id:999}]),null)
+})

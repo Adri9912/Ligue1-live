@@ -898,3 +898,6 @@
 .reminder-default strong,.reminder-choice strong { display:block; font-size:14px; line-height:1.5; }
 .reminder-default small,.reminder-choice small { display:block; font-size:13px; line-height:1.6; color:var(--muted); margin-top:4px; }
 .followed-add .reminder-default { flex-basis:100%; display:flex; margin:4px 0; font-weight:400; }
+
+.player-initials { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:13px; font-weight:800; }
+.player-portrait.large .player-initials { font-size:26px; }

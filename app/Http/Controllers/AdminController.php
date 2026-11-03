@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class AdminController extends Controller {
     private function reply(array $data) { return response()->json($data)->header('Cache-Control','no-store'); }
     public function overview() {
-        $budgets=[];foreach(['highlightly','api-football'] as $provider) {
+        $budgets=[];foreach(['highlightly','api-football','balldontlie'] as $provider) {
             $client=new ApiClient($provider);$budgets[]=['provider'=>$provider,'configured'=>$client->key()!=='','budget'=>$client->budget()];
         }
         return $this->reply(['stats'=>[

@@ -12,5 +12,5 @@ Route::get('/assets/{file}', function (string $file) {
 Route::fallback(function(Request $request) {
     abort_if($request->is('api','api/*') || str_contains($request->path(),'.'),404);
     $index=base_path('dist/index.html');abort_unless(is_file($index),503,'Compilez l’interface avec npm run build.');
-    return response()->file($index,['Content-Type'=>'text/html; charset=utf-8','Cache-Control'=>'no-cache','X-Content-Type-Options'=>'nosniff','Referrer-Policy'=>'strict-origin-when-cross-origin','Content-Security-Policy'=>"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://media.api-sports.io https://highlightly.net data:; connect-src 'self'; base-uri 'self'; frame-ancestors 'none'"]);
+    return response()->file($index,['Content-Type'=>'text/html; charset=utf-8','Cache-Control'=>'no-cache','X-Content-Type-Options'=>'nosniff','Referrer-Policy'=>'strict-origin-when-cross-origin','Content-Security-Policy'=>"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://media.api-sports.io https://highlightly.net https://r2.thesportsdb.com https://www.thesportsdb.com data:; connect-src 'self'; base-uri 'self'; frame-ancestors 'none'"]);
 });

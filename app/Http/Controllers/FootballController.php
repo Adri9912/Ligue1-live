@@ -26,7 +26,7 @@ class FootballController extends Controller
         return $this->reply(fn($l,$m)=>$l->lineup((int)$id,(int)$offset,$m),$r);
     }
     public function club(Request $r,string $id) { return $this->reply(fn($l,$m)=>(new \App\Football\Clubs($l))->detail((int)$id,$m),$r); }
-    public function player(Request $r,string $club,string $id) { return $this->reply(fn($l,$m)=>(new \App\Football\Clubs($l))->player((int)$club,(int)$id,$m),$r); }
+    public function player(Request $r,string $club,string $id) { $data=$r->validate(['source'=>['nullable','in:api-football,balldontlie']]);return $this->reply(fn($l,$m)=>(new \App\Football\Clubs($l))->player((int)$club,(int)$id,$m,$data['source']??null),$r); }
     public function retro(Request $r,?string $year=null,?string $section=null) { return $this->reply(fn($l,$m)=>$year===null?(new \App\Football\Retro)->metadata():(new \App\Football\Retro)->get((int)$year,$section,$m),$r); }
     private function reply(callable $action,Request $r) {
         $league=new League;$data=$action($league,$r->header('x-l1-manual-refresh')==='1');

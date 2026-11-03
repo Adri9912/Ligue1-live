@@ -3,6 +3,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FootballController;
 Route::get('/{section}', FootballController::class)->where('section', 'status|matches|overview');
 
+Route::get('/portraits/{id}',function(string $id) { return response()->json(\App\Football\Portraits::get((int)$id))->header('Cache-Control','no-store'); })->where('id','[0-9]{1,10}');
+
 Route::post('/control', [FootballController::class, 'control']);
 
 Route::get('/matches/{id}/lineups', [FootballController::class,'matchLineups'])->where('id','[0-9]{1,10}');

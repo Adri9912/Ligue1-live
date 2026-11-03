@@ -9,7 +9,7 @@ Application web de suivi de la Ligue 1, développée avec **Laravel 13**, Vue 3 
 - Calendrier, résultats et scores actualisés pendant les matchs.
 - Classement avec repères pour les places européennes et la relégation.
 - Club favori, prochains matchs et alertes personnalisées.
-- Actualisation automatique et bouton manuel limité à 10 clics par jour et par navigateur, sous le budget API partagé.
+- Actualisation automatique et bouton manuel limité à 10 clics par jour et par compte, sous le budget API partagé.
 - Fiches clubs : effectif, joueurs, stade, création et palmarès.
 - Dernières compositions disponibles sur un terrain.
 - Statistiques et événements des matchs selon les données disponibles.
@@ -20,9 +20,11 @@ Application web de suivi de la Ligue 1, développée avec **Laravel 13**, Vue 3 
 - Laravel 13 et PHP 8.5 pour le serveur et les appels API.
 - Vue 3, Vue Router, Vite et Tailwind CSS pour l’interface.
 - Highlightly pour les matchs, le classement et les compositions.
-- API-Football pour les effectifs, les profils et les archives.
+- BALLDONTLIE pour les effectifs et les profils actuels.
+- TheSportsDB pour les portraits disponibles, associés par nom et date de naissance.
+- API-Football pour les informations historiques des clubs et les archives disponibles ; portraits conservés lorsque leur correspondance est vérifiée.
 
-Le cache et les quotas sont gérés côté serveur. Aucune base de données n’est nécessaire.
+Le cache et les quotas sont gérés côté serveur. MySQL conserve les comptes, les favoris et les préférences de rappels lorsque ces fonctionnalités sont activées.
 
 ## Installation
 
@@ -38,7 +40,7 @@ npm run dev
 
 Ouvrir http://127.0.0.1:5173.
 
-Renseigner `HIGHLIGHTLY_API_KEY` et `FOOTBALL_API_KEY` dans le fichier privé `.env` pour utiliser les vraies données. Sans clé du fournisseur principal, un mode démonstration clairement signalé est proposé.
+Renseigner `HIGHLIGHTLY_API_KEY`, `BALLDONTLIE_API_KEY` et, pour les archives, `FOOTBALL_API_KEY` dans le fichier privé `.env` pour utiliser les vraies données. Sans clé du fournisseur principal, un mode démonstration clairement signalé est proposé.
 
 Ne jamais publier le fichier `.env` ou les clés API. Pour une installation existante, conserver son `.env` et sa clé `APP_KEY`.
 

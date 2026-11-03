@@ -1,6 +1,7 @@
 # Ligue 1 Live — contexte du projet
 
 ## État vérifié le 3 novembre 2026
+- V2 publiée sur main : commit 06a8d9431c9d6867d6e71c75e34e9ec6bd6fc108 ; GitHub Actions et déploiement Alwaysdata réussis. Comptes et rappels ouverts, tables MySQL/MariaDB créées, SMTP et sessions sécurisées en production. Compte propriétaire vérifié par le parcours e-mail puis promu administrateur par la commande privée.
 - Projet existant : Vue 3, Vite, Tailwind, Laravel 13 ; hébergement PHP Alwaysdata.
 - La version publique conserve ses fonctionnalités sportives. Highlightly fournit calendrier, résultats, classement et compositions. API-Football complète effectifs/profils/archives ; sa suspension avait été confirmée, aucune réactivation n'est supposée.
 - Les clés et identifiants restent dans les fichiers privés ignorés de Git. Aucun secret ni lien de récupération dans cette documentation.
@@ -37,11 +38,10 @@
 - Le cache, la temporisation, le plafond de 90 appels par fournisseur et les modes Auto/Manuel/Pause restent appliqués. Le quota de dix porte sur les clics manuels ; les lectures sportives automatiques utilisent le budget global.
 - ACCOUNTS_ENABLED=false garde le fonctionnement historique par navigateur pour la version publique jusqu'à une activation autorisée.
 
-## Non implémenté / non déployé
-- Administration locale implémentée ; activation et premier administrateur de production restent à faire.
-- Activation des tâches planifiées et du traitement de la file en production (code local prêt).
-- Activation MySQL/SMTP dans le site public et migrations Alwaysdata ; accès de préparation et sauvegarde privée validés.
-- Migration et activation publiques à autoriser séparément : sauvegarde MySQL préparée, restauration locale vérifiée ; le rollback actuel restaure seulement le code.
+## À suivre après mise en ligne
+- Vérifier les premiers rappels concernant de vrais matchs et les quotas du fournisseur ; aucun événement sportif fictif n’a été ajouté en production.
+- Les e-mails de résultats restent à valider, ils ne sont pas activés.
+- Pour toute nouvelle migration, conserver sauvegarde et validation de la cible : le rollback du code ne restaure pas la base.
 
 ## Vérification et fonctionnement local
 100 tests Laravel (1034 assertions) et 33 tests JavaScript passent. Le parcours favoris a été testé sur deux sessions réelles et MySQL local, sans appels fournisseur. Le compteur navigateur a été préchargé à 3 clics dans la base locale pour vérifier le partage sans consommer de quota ; les clics acceptés/refusés sont testés avec des fournisseurs simulés.
@@ -100,3 +100,27 @@ Voir docs/COMPTES.md. Les tests de comptes imposent le nom de base ligue1_live_t
 - Authentification GitHub et secret de déploiement présents ; origin/main correspond au dernier commit local avant le lot V2. Sauvegarde pré-déploiement de la configuration active conservée hors du web et nouvel export de la base vide réalisés.
 - La commande crontab est interdite sur l’offre Alwaysdata actuelle ; utiliser la tâche planifiée du panneau, conformément à sa documentation, pas un processus permanent.
 - Publication et activation en cours ; ne pas interpréter les entrées antérieures « non déployé » comme un retrait de l’autorisation ci-dessus.
+
+## Journal de publication — 3 novembre 2026
+- Push explicitement autorisé et réalisé sur main (06a8d94). Workflow 41612982017 : tests JavaScript, compilation, restauration simulée, 100 tests Laravel et déploiement réussis.
+- Sauvegarde privée de configuration et export pré-migration de la base vide ; trois migrations appliquées sur la cible contrôlée ligue1-live_ligue1, serveur 11.8.9-MariaDB. Sauvegarde supplémentaire après création des tables.
+- Activation progressive : comptes fermés au déploiement, configuration MySQL/SMTP puis tables, sessions database et contrôles, ouverture des comptes, puis ouverture des rappels. Clé d’application, clés football et réglages de quotas historiques conservés ; aucun cache sportif effacé.
+- Compte réel du propriétaire créé avec rôle user ; connexion, cookies Secure/HttpOnly/SameSite=Lax, refus d’administration au compte non vérifié et compteur dix clics réellement contrôlés en HTTPS. Mot de passe temporaire de recette supprimé ; propriétaire ayant choisi son mot de passe et vérifié son adresse via les e-mails publics. Promotion admin réussie depuis SSH, sans nouvelle attribution par HTTP.
+- Tâche Alwaysdata gérée dans son panneau (crontab CLI interdit), chaque minute, utilisateur SSH du projet, PHP 8.5. Point final surnuméraire du répertoire de travail identifié dans le journal et corrigé par le propriétaire ; validation du prochain passage automatique en cours.
+- Derniers contrôles publics : accueil/connexion/up HTTP 200, API d’administration 401 pour visiteur, fichiers privés inaccessibles, aucune valeur privée connue dans le build déployé. Aucun compte fictif ni favori fictif ajouté en production.
+- Mise à jour documentaire après publication conservée localement ; pas de deuxième push sans nouvel accord.
+
+## Activation V2 terminée — 3 novembre 2026
+- Tâche Alwaysdata 37340 corrigée (suppression du point final dans le répertoire) ; deux traitements réellement exécutés par le planificateur, sans lancement manuel : préparation success et file mail success, témoins healthy. Zéro rappel préparé lors du premier contrôle, aucun message fictif injecté en production.
+- Propriétaire ayant modifié son mot de passe puis confirmé son adresse sur le domaine public ; rôle admin accordé par account:make-admin après cette vérification. Recharge de la page pour voir le menu Administration.
+- Compte réel, rappels, sessions database et SMTP actifs ; tests HTTPS du compte, protections et fichiers privés réussis, /up HTTP 200. Tests GitHub Actions et déploiement du commit 06a8d94 réussis.
+- Sauvegarde finale effectuée ; fichiers temporaires d’activation et configuration de préparation dupliquée supprimés du serveur, exports et sauvegardes d’environnement privés conservés. Aucun nouveau push pour cette mise à jour documentaire locale.
+
+## Rappels précochés pour les nouveaux choix — préparation locale
+- Modification autorisée après discussion du défaut : option e-mail précochée, visible avant validation d’un nouveau club ; possibilité de décocher avant confirmation ou de désactiver ensuite. Aucun push/déploiement pour ce nouveau lot sans nouvel accord.
+- Choix transmis explicitement par Vue (reminders_enabled) et enregistré seulement lors d’un nouveau suivi, dans la transaction du favori. Les anciens suivis et leurs préférences, y compris l’absence de préférence et les refus, sont conservés lors d’un changement de principal.
+- Confirmation dans le sélecteur pour un nouveau favori, y compris depuis une fiche club/équipe ou la reprise d’un ancien favori. Les clubs déjà suivis conservent leur sélection directe. Formulaire d’ajout multi-clubs avec la même option précochée.
+- Un compte non vérifié peut enregistrer/modifier son choix ; aucun envoi tant que l’adresse n’est pas vérifiée. L’interface indique « en attente » et le contrôle serveur d’éligibilité reste obligatoire, avant H−2. Aucun changement de table ni inscription automatique de comptes existants.
+- Tests backend : préférence cochée/décochée, attente de vérification, sauvegarde via les deux endpoints, non-écrasement, compatibilité des anciens clients, service désactivé et validation. 106 tests Laravel (1065 assertions) et 33 tests JavaScript passent.
+- Recette Chrome locale sur serveur isolé avec MAIL_MAILER=array, mode football pause : confirmation du nouveau favori et ajout multi-clubs, case cochée/décochée, édition avant vérification, parcours depuis fiche équipe, annulation sans ajout, ancien refus conservé lors du changement de principal et après rechargement. Largeurs 320/390/768/1440 sans débordement ; captures sombre mobile et claire ordinateur inspectées. Aucune exception JavaScript, aucun e-mail externe, compteur fournisseur inchangé. Compte de recette supprimé après l’essai.
+- Propriétaire ayant explicitement validé le push et le déploiement de ce lot (« oui je valide »). Publication sur main et vérification du workflow/de la version publique autorisées ; aucun changement de schéma requis.

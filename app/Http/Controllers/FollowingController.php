@@ -10,21 +10,21 @@ class FollowingController extends Controller {
     }
     public function index(Request $request) { return $this->reply($request); }
     public function follow(Request $request) {
-        $data=$request->validate(['team_id'=>['required','integer','min:1'],'primary'=>['sometimes','boolean']]);
+        $data=$request->validate(['team_id'=>['required','integer','min:1'],'primary'=>['sometimes','boolean'],'reminders_enabled'=>['sometimes','boolean']]);
         $team=Following::currentTeam($data['team_id']);
         DB::transaction(function() use($request,$data,$team) {
             $user=User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
-            $user->followedTeams()->syncWithoutDetaching([$team->id]);
+            Following::attach($user,$team,$data['reminders_enabled']??null);
             if(($data['primary']??false)||!$user->primary_team_id)$user->forceFill(['primary_team_id'=>$team->id])->save();
         });
         return $this->reply($request);
     }
     public function primary(Request $request) {
-        $data=$request->validate(['team_id'=>['present','nullable','integer','min:1']]);
+        $data=$request->validate(['team_id'=>['present','nullable','integer','min:1'],'reminders_enabled'=>['sometimes','boolean']]);
         $team=$data['team_id']===null?null:Following::currentTeam($data['team_id']);
         DB::transaction(function() use($request,$data,$team) {
             $user=User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
-            if($team)$user->followedTeams()->syncWithoutDetaching([$team->id]);
+            if($team)Following::attach($user,$team,$data['reminders_enabled']??null);
             $user->forceFill(['primary_team_id'=>$team?->id])->save();
         });
         return $this->reply($request);

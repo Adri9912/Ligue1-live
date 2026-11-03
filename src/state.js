@@ -9,7 +9,7 @@ export const state = reactive({
   mode: null, source: null, season: null, teams: [], standings: [], matches: [], fetchedAt: null, stale: false, matchesFetchedAt: null, standingsFetchedAt: null, matchesStale: false, standingsStale: false, refreshNotice: '',
   refreshMode: 'auto', manualRefresh: null, budget: null, nextRefreshAt: null, controlReady: false, refreshSerial: 0, lastRefreshWasManual: false,
   matchFilters: { filter: 'all', round: null, selectedTeam: '', followCurrentRound: true },
-  loading: true, refreshing: false, error: '', favorite: null, favoriteSaving: false, favoriteError: '',
+  loading: true, refreshing: false, error: '', favorite: null, favoriteSaving: false, favoriteError: '', favoriteCandidate: null,
   themePreference: ['light', 'dark'].includes(read('l1-theme', 'auto')) ? read('l1-theme', 'auto') : 'auto',
   theme: document.documentElement.dataset.theme || themeAt(read('l1-theme', 'auto')), pickerOpen: false, storageError: '',
 })
@@ -22,14 +22,18 @@ watch(() => [account.ready, account.enabled, account.user?.id, account.following
     : read('l1-favorite-source', 'api-football') === state.source ? Number(read('l1-favorite', '0')) || null : null
   if (next !== state.favorite) { state.favorite = next; resetAlertBaseline(next, state.matches) }
 })
-watch(() => account.user?.id, () => { state.pickerOpen = false; state.manualRefresh = null; state.refreshNotice = '' })
-export async function chooseFavorite(id) {
+watch(() => account.user?.id, () => { state.pickerOpen = false; state.favoriteCandidate = null; state.manualRefresh = null; state.refreshNotice = '' })
+export async function chooseFavorite(id, { remindersEnabled } = {}) {
   if (state.favoriteSaving) return
   state.favoriteError = ''
   if (account.enabled !== false) {
     if (!account.user) { state.pickerOpen = true; return }
+    const followed = account.following.source === state.source && account.following.teams.some(team => team.providerId === id)
+    if (id && !followed && account.following.remindersAvailable && remindersEnabled === undefined) {
+      state.favoriteCandidate = id; state.pickerOpen = true; return
+    }
     state.favoriteSaving = true
-    try { await accountRequest('/primary-team', { method: 'PUT', body: { team_id: id || null } }); state.pickerOpen = false }
+    try { await accountRequest('/primary-team', { method: 'PUT', body: { team_id: id || null, ...(!followed && id && remindersEnabled !== undefined ? { reminders_enabled: remindersEnabled } : {}) } }); state.pickerOpen = false }
     catch (error) { state.favoriteError = error.message }
     finally { state.favoriteSaving = false }
     return

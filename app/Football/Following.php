@@ -13,6 +13,16 @@ class Following {
             'apiFootballId'=>$t->api_football_id,'name'=>$t->name,'fullName'=>$t->full_name,'code'=>$t->code,'logo'=>$t->logo,'lastSeenSeason'=>$t->last_seen_season,'remindersEnabled'=>(bool)($preferences[$t->id]??false),
         ])->all():[]];
     }
+    public static function attach(User $user,Team $team,?bool $reminders):void {
+        $changes=$user->followedTeams()->syncWithoutDetaching([$team->id]);
+        // Une préférence n'est initialisée que pour un nouveau suivi et un choix transmis.
+        if($changes['attached']&&config('reminders.enabled')&&$reminders!==null) {
+            \Illuminate\Support\Facades\DB::table('notification_preferences')->insertOrIgnore([
+                'user_id'=>$user->id,'team_id'=>$team->id,'reminders_enabled'=>$reminders,
+                'enabled_at'=>$reminders?now():null,'created_at'=>now(),'updated_at'=>now(),
+            ]);
+        }
+    }
     public static function currentTeam(int $id): Team {
         $league=new League;
         if(!$league->client->key())throw new ApiError('Les favoris enregistrés nécessitent les données réelles de Ligue 1.',409);

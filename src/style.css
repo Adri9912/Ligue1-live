@@ -890,3 +890,11 @@
 .reminder-activity-list dt { color:var(--muted); font-size:13px; margin-bottom:5px; }
 .reminder-activity-list dd { margin:0; font-size:14px; overflow-wrap:anywhere; }
 @media(max-width:450px) { .reminder-activity-list dl { grid-template-columns:1fr; } }
+
+.favorite-confirm-club { display:flex; align-items:center; gap:16px; font-size:22px; margin:18px 0; }
+.favorite-confirm>.button { margin:16px 0; }
+.reminder-default { display:flex; align-items:flex-start; gap:12px; border:1px solid var(--line); border-radius:10px; padding:16px; background:var(--soft); cursor:pointer; }
+.reminder-default input { width:20px; height:20px; min-height:20px; padding:0; flex:0 0 20px; margin:2px 0 0; accent-color:var(--green-ink); }
+.reminder-default strong,.reminder-choice strong { display:block; font-size:14px; line-height:1.5; }
+.reminder-default small,.reminder-choice small { display:block; font-size:13px; line-height:1.6; color:var(--muted); margin-top:4px; }
+.followed-add .reminder-default { flex-basis:100%; display:flex; margin:4px 0; font-weight:400; }

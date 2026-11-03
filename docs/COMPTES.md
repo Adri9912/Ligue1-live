@@ -51,7 +51,7 @@ Connexion et authentification Alwaysdata réussies. Un unique e-mail de test aut
 
 ## Rappels deux heures avant le match
 
-Activer REMINDERS_ENABLED=true uniquement lorsque les migrations locales sont présentes. Chaque club suivi affiche sa case de consentement, décochée par défaut. L’adresse doit être vérifiée pour activer un rappel ; sa désactivation reste possible après un changement d’adresse. Le consentement et la vérification doivent précéder H−2 : aucun rattrapage tardif.
+Activer REMINDERS_ENABLED=true uniquement lorsque les migrations locales sont présentes. Au choix d’un nouveau club, l’option de rappel e-mail est visible et précochée avant validation. La personne peut décocher cette option ou la désactiver ensuite. Le choix est enregistré même avant vérification de l’adresse ; les envois attendent obligatoirement cette vérification. Les préférences des clubs déjà suivis sont conservées. Le consentement et la vérification doivent précéder H−2 : aucun rattrapage tardif.
 
 Le collecteur prépare les rencontres de la saison entre H−2 et H−2+10 minutes, avec un calendrier reçu il y a dix minutes au plus. En mode Auto, une vérification partagée au moment des rappels respecte le cache et les budgets existants ; elle peut consommer des appels fournisseur, indépendamment du nombre d’inscrits. Le mode Manuel utilise les données disponibles sans forcer leur actualisation ; Pause suspend la préparation et les envois. Un rappel peut donc être omis si les données ne sont pas fiables ou si le quota est épuisé.
 
@@ -63,7 +63,7 @@ Chaque e-mail contient un lien signé de désabonnement valable trente jours. Sa
 
 Pour une recette sans livraison réelle, lancer le serveur avec MAIL_MAILER=array, REMINDERS_ENABLED=true et FOOTBALL_REFRESH_MODE=pause ; les traitements d’envoi utilisent des fixtures et un transport simulés dans les tests. Ne pas employer de faux destinataires avec smtp activé. Les liens des e-mails utilisent APP_URL : 127.0.0.1:5173 pour le lanceur, domaine HTTPS réel en production.
 
-100 tests Laravel et 33 tests JavaScript passent. Le worker database a été réellement exécuté dans la base de test, avec envoi simulé. Aucun cron de production n’est encore installé.
+106 tests Laravel et 33 tests JavaScript passent. Le worker database a été réellement exécuté dans la base de test, avec envoi simulé. La tâche Alwaysdata est désormais active chaque minute (voir docs/ALWAYSDATA.md).
 
 Prévisualisation locale après recette : SMTP activé pour les inscriptions réelles ; rappels visibles, appels football en pause et aucun planificateur démarré. Repasser explicitement à array avant toute nouvelle recette avec des adresses fictives.
 
@@ -92,3 +92,11 @@ L’administration montre séparément football:reminders (préparation) et foot
 Chaque commande planifiée doit passer chaque minute. Une dernière fin datant de plus de cinq minutes, ou un lancement interrompu sans fin depuis plus de cinq minutes, déclenche « Activité en retard ». Un échec ne remplace pas le dernier succès. Pause et désactivation volontaires n’engendrent pas d’alerte ; après reprise, un nouveau passage réussi est attendu. La file peut avoir été traitée correctement alors qu’un message individuel a échoué : lire aussi l’historique des livraisons.
 
 Le panneau vérifie ses données toutes les minutes dans l’onglet visible, sans appel fournisseur ni envoi d’e-mail, et indique l’heure de vérification en heure de Paris. Une panne de lecture est affichée et ne fait pas passer un ancien état pour un contrôle récent. Les autorisations administrateur existantes s’appliquent.
+
+## Nouveau choix de club et rappels (publication validée le 3 novembre 2026)
+
+Le formulaire d’ajout et le sélecteur de nouveau favori transmettent reminders_enabled explicitement. Le backend initialise la préférence seulement lors d’un nouveau suivi : changer le principal, revisiter un club ou utiliser un ancien client n’écrase jamais un choix existant. Le défaut de la table reste false et aucune migration n’est requise.
+
+La fiche équipe/club ouvre une confirmation avec la case précochée pour un nouveau suivi. Annuler ne modifie pas les favoris. Une adresse non vérifiée affiche le choix en attente ; la personne peut déjà le modifier, et le collecteur/worker continuent d’exclure tout envoi tant que la vérification n’est pas faite. Les autres règles de délai, de dédoublonnage et de désabonnement sont conservées.
+
+Recette navigateur locale validée sur quatre largeurs de 320 à 1 440 px, en clair et en sombre : confirmation, décochage, ajout, annulation, attente de vérification et conservation après rechargement. Aucun envoi externe ni appel fournisseur durant cette recette.

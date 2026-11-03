@@ -20,7 +20,11 @@ test('favoris : stockage serveur, déconnexion, changement de compte et mode inc
     state.source='highlightly';account.ready=true;account.enabled=true;account.user={id:1};account.csrfToken='csrf-test-only'
     await nextTick();assert.equal(state.favorite,null)
     response={following:{primaryTeamId:11,source:'highlightly',teams:[{id:11,providerId:1,name:'Club A'}]}}
+    account.following={primaryTeamId:null,source:'highlightly',teams:[],remindersAvailable:true}
     await chooseFavorite(1);await nextTick()
+    assert.equal(calls.length,0);assert.equal(state.pickerOpen,true);assert.equal(state.favoriteCandidate,1)
+    await chooseFavorite(1,{remindersEnabled:false});await nextTick()
+    assert.deepEqual(JSON.parse(calls[0].options.body),{team_id:1,reminders_enabled:false})
     assert.equal(state.favorite,1)
     assert.equal(calls[0].path,'/api/account/primary-team')
     assert.equal(calls[0].options.headers['X-CSRF-TOKEN'],'csrf-test-only')

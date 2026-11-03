@@ -69,4 +69,46 @@ class FollowingTest extends TestCase {
         $this->assertDatabaseMissing('user_followed_teams',['user_id'=>$a->id]);$this->assertDatabaseMissing('manual_refresh_counts',['user_id'=>$a->id]);
         $this->assertDatabaseHas('user_followed_teams',['user_id'=>$b->id,'team_id'=>$id]);$this->assertDatabaseHas('teams',['id'=>$id]);
     }
+    public function test_new_follow_saves_visible_email_choice_but_delivery_waits_for_verified_address():void {
+        config(['reminders.enabled'=>true]);$user=$this->user();
+        $this->actingAs($user)->postJson('/api/account/following',['team_id'=>68864,'reminders_enabled'=>true])->assertOk()->assertJsonPath('following.teams.0.remindersEnabled',true);
+        $teamId=$user->fresh()->primary_team_id;
+        $this->assertDatabaseHas('notification_preferences',['user_id'=>$user->id,'team_id'=>$teamId,'reminders_enabled'=>true]);
+        $match=new \App\Models\FootballMatch(['home_team_id'=>$teamId,'away_team_id'=>999,'kickoff_at'=>now()->addHours(3)]);
+        $this->assertFalse(\App\Football\Reminders::eligible($user->fresh(),$match));
+        $user->markEmailAsVerified();$this->assertTrue(\App\Football\Reminders::eligible($user->fresh(),$match));
+    }
+    public function test_unchecked_choice_is_saved_and_later_primary_changes_do_not_overwrite_it():void {
+        config(['reminders.enabled'=>true]);$user=$this->user();
+        $this->actingAs($user)->putJson('/api/account/primary-team',['team_id'=>68864,'reminders_enabled'=>false])->assertOk()->assertJsonPath('following.teams.0.remindersEnabled',false);
+        $this->putJson('/api/account/primary-team',['team_id'=>68864,'reminders_enabled'=>true])->assertOk()->assertJsonPath('following.teams.0.remindersEnabled',false);
+        $this->postJson('/api/account/following',['team_id'=>68864,'reminders_enabled'=>true])->assertOk()->assertJsonPath('following.teams.0.remindersEnabled',false);
+        $this->assertDatabaseCount('notification_preferences',1);$this->assertDatabaseHas('notification_preferences',['user_id'=>$user->id,'enabled_at'=>null,'reminders_enabled'=>false]);
+    }
+    public function test_new_primary_can_store_checked_choice_without_duplicate_or_later_implicit_opt_out():void {
+        config(['reminders.enabled'=>true]);$user=$this->user();
+        $this->actingAs($user)->putJson('/api/account/primary-team',['team_id'=>68864,'reminders_enabled'=>true])->assertOk()->assertJsonPath('following.teams.0.remindersEnabled',true);
+        $at=\Illuminate\Support\Facades\DB::table('notification_preferences')->value('enabled_at');$this->travel(5)->minutes();
+        $this->postJson('/api/account/following',['team_id'=>68864,'reminders_enabled'=>false])->assertOk()->assertJsonPath('following.teams.0.remindersEnabled',true);
+        $this->assertDatabaseCount('notification_preferences',1);$this->assertSame($at,\Illuminate\Support\Facades\DB::table('notification_preferences')->value('enabled_at'));
+        $this->travelBack();
+    }
+    public function test_older_follows_with_no_preference_are_not_enrolled_by_switching_primary():void {
+        config(['reminders.enabled'=>true]);$user=$this->user();
+        $this->actingAs($user)->postJson('/api/account/following',['team_id'=>68864])->assertOk();
+        $this->putJson('/api/account/primary-team',['team_id'=>68864,'reminders_enabled'=>true])->assertOk()->assertJsonPath('following.teams.0.remindersEnabled',false);
+        $this->assertDatabaseCount('notification_preferences',0);
+    }
+    public function test_disabled_reminder_feature_never_enrolls_new_follows():void {
+        config(['reminders.enabled'=>false]);$user=$this->user();
+        $this->actingAs($user)->postJson('/api/account/following',['team_id'=>68864,'reminders_enabled'=>true])->assertOk()->assertJsonPath('following.remindersAvailable',false);
+        $this->assertDatabaseCount('notification_preferences',0);
+    }
+    public function test_invalid_reminder_choice_is_rejected_before_adding_a_club():void {
+        config(['reminders.enabled'=>true]);$user=$this->user();
+        $this->actingAs($user)->postJson('/api/account/following',['team_id'=>68864,'reminders_enabled'=>'oui'])->assertUnprocessable();
+        $this->putJson('/api/account/primary-team',['team_id'=>68864,'reminders_enabled'=>'oui'])->assertUnprocessable();
+        $this->assertDatabaseCount('user_followed_teams',0);Http::assertNothingSent();
+    }
+
 }

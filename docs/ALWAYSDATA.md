@@ -1,5 +1,7 @@
 # Déploiement Laravel sur alwaysdata
 
+État au 3 novembre 2026 : V2 déployée (06a8d94), trois migrations appliquées, comptes et rappels activés, sessions en base et SMTP configurés. Le premier administrateur a été vérifié et promu. La tâche minute est enregistrée dans le panneau Alwaysdata ; son répertoire a été corrigé et ses passages sont contrôlés par les témoins de l’administration. Les sections de préparation ci-dessous décrivent aussi les étapes historiques et la procédure pour une nouvelle installation.
+
 Le site utilise **Laravel et PHP**. Documentation de référence : [PHP](https://help.alwaysdata.com/fr/docs/hebergement-web/langages/php/configuration/) et [déploiement Laravel](https://laravel.com/docs/deployment).
 
 ## Préparer la version
@@ -157,3 +159,9 @@ Le site actif reste dans sa configuration historique ; aucune migration, activat
 La tâche alwaysdata reste un seul php artisan schedule:run par minute. Laravel appelle maintenant football:reminders puis football:send-reminders, qui enveloppe queue:work database --queue=mail avec les limites précédentes et enregistre le démarrage/la fin. Utiliser cette enveloppe pour conserver la visibilité du traitement ; un worker démarré directement par queue:work n’actualise pas ce témoin.
 
 Dans l’administration, les deux derniers passages doivent être récents. Au-delà de cinq minutes, vérifier la tâche alwaysdata, son répertoire courant, sa version PHP et ses droits sur le cache. En mode Pause ou rappels désactivés, l’arrêt est explicitement indiqué. La consultation du panneau n’exécute pas le planificateur. Le cache et ces témoins restent sur le serveur entre déploiements ; aucun cache:clear à effectuer.
+
+### Validation finale de l’activation
+
+La tâche du panneau (37340) s’exécute toutes les minutes avec la commande php artisan schedule:run, répertoire www/ligue1-live sous le préfixe personnel, utilisateur SSH ligue1-live et PHP_VERSION=8.5. Un point final surnuméraire dans le répertoire a d’abord empêché les démarrages ; il a été retiré. Les deux témoins de traitement ont ensuite confirmé des exécutions automatiques réussies.
+
+Le propriétaire a choisi son mot de passe et vérifié son adresse dans les e-mails publics ; son compte a été promu administrateur depuis SSH. Les fichiers temporaires de préparation contenant une copie des identifiants sont supprimés ; la configuration active reste dans le .env privé et les sauvegardes restent hors du web. Les anciennes descriptions de préparation constituent l’historique de l’intervention.

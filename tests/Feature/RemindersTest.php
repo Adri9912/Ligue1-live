@@ -119,14 +119,14 @@ class RemindersTest extends TestCase {
         (new SendMatchReminder($delivery->id))->handle($sender);$this->assertSame('cancelled',$delivery->fresh()->status);
         $user->delete();(new SendMatchReminder($delivery->id))->handle($sender);$this->assertDatabaseCount('notification_deliveries',0);
     }
-    public function test_preferences_are_explicit_verified_owned_and_idempotent():void {
+    public function test_preferences_are_owned_idempotent_and_can_wait_for_verification():void {
         $user=$this->subscriber();$team=$user->followedTeams()->first();DB::table('notification_preferences')->delete();
         $this->getJson('/api/account/following')->assertUnauthorized();
         $this->actingAs($user)->putJson('/api/account/following/'.$team->id.'/reminders',['enabled'=>true,'user_id'=>999])->assertOk()->assertJsonPath('following.teams.0.remindersEnabled',true);
         $at=DB::table('notification_preferences')->value('enabled_at');$this->travel(5)->minutes();
         $this->putJson('/api/account/following/'.$team->id.'/reminders',['enabled'=>true])->assertOk();$this->assertSame($at,DB::table('notification_preferences')->value('enabled_at'));
         $this->putJson('/api/account/following/999/reminders',['enabled'=>true])->assertNotFound();
-        $user->forceFill(['email_verified_at'=>null])->save();$this->putJson('/api/account/following/'.$team->id.'/reminders',['enabled'=>true])->assertForbidden();
+        $user->forceFill(['email_verified_at'=>null])->save();$this->putJson('/api/account/following/'.$team->id.'/reminders',['enabled'=>true])->assertOk()->assertJsonPath('following.teams.0.remindersEnabled',true);
         $this->putJson('/api/account/following/'.$team->id.'/reminders',['enabled'=>false])->assertOk();
     }
     public function test_signed_unsubscribe_requires_confirmation_and_does_not_touch_other_account():void {

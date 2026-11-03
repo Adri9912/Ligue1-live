@@ -8,7 +8,6 @@ class ReminderPreferencesController extends Controller {
     public function update(Request $request,string $id) {
         abort_unless(config('reminders.enabled'),503,'Les rappels ne sont pas encore ouverts.');
         $data=$request->validate(['enabled'=>['required','boolean']]);$user=$request->user();
-        abort_if($data['enabled']&&!$user->hasVerifiedEmail(),403,'Vérifiez votre adresse e-mail avant d’activer les rappels.');
         DB::transaction(function()use($user,$id,$data) {
             User::whereKey($user->id)->lockForUpdate()->firstOrFail();
             abort_unless($user->followedTeams()->where('teams.id',$id)->exists(),404,'Ce club ne fait pas partie de votre suivi.');

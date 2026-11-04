@@ -908,3 +908,6 @@ html { scrollbar-gutter:stable; }
 .data-control-bar { min-height:33px; }
 .club-badge img { width:100%; height:100%; }
 @media(max-width:600px) { .data-control-bar { min-height:40px; } }
+
+.data-control-bar .refresh-signin { font-size:15px; font-weight:700; line-height:1.4; text-decoration:underline; text-underline-offset:3px; }
+@media(max-width:600px) { .data-control-bar .refresh-signin { font-size:14px; } }

@@ -6,7 +6,7 @@ watch(() => props.team.id, () => { failed.value = false })
 </script>
 <template>
   <span class="club-badge" :class="size" :style="{ '--club': team.color || '#365d88' }" aria-hidden="true">
-    <img v-if="team.logo && !failed" :src="team.logo" alt="" @error="failed = true" />
+    <img v-if="team.logo && !failed" :src="team.logo" :crossorigin="team.logo.startsWith('https://highlightly.net/') ? 'anonymous' : undefined" width="80" height="80" :loading="['large', 'hero-badge'].includes(size) ? 'eager' : 'lazy'" decoding="async" referrerpolicy="no-referrer" alt="" @error="failed = true" />
     <span v-else class="club-crest"><span class="crest-star">✦</span><b>{{ team.code || team.name.slice(0, 3) }}</b><span class="crest-line"></span></span>
   </span>
 </template>

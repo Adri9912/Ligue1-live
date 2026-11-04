@@ -22,4 +22,4 @@ onUnmounted(() => { mounted = false; version++; observer?.disconnect(); clearTim
 const initials = computed(() => (props.name || '').trim().split(/\s+/).filter(Boolean).map(word => word[0]).slice(0, 2).join('').toLocaleUpperCase('fr'))
 watch(() => [props.photo, props.lookup], () => { version++; clearTimeout(timer); portrait.value=null; failed.value=false; load() })
 </script>
-<template><span ref="root" class="player-portrait" :class="{large}" aria-hidden="true"><img v-if="(!failed && photo) || portrait" :src="(!failed && photo) || portrait" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" @error="imageError" /><span v-else class="player-initials">{{ initials || '?' }}</span></span></template>
+<template><span ref="root" class="player-portrait" :class="{large}" aria-hidden="true"><img v-if="(!failed && photo) || portrait" :src="(!failed && photo) || portrait" :width="large ? 96 : 38" :height="large ? 96 : 38" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" @error="imageError" /><span v-else class="player-initials">{{ initials || '?' }}</span></span></template>

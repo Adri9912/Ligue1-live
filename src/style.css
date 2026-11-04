@@ -901,3 +901,10 @@
 
 .player-initials { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:13px; font-weight:800; }
 .player-portrait.large .player-initials { font-size:26px; }
+
+/* Réserver l’espace avant les données et conserver la largeur lors du défilement. */
+html { scrollbar-gutter:stable; }
+.initial-loading-state { min-height:100svh; }
+.data-control-bar { min-height:33px; }
+.club-badge img { width:100%; height:100%; }
+@media(max-width:600px) { .data-control-bar { min-height:40px; } }

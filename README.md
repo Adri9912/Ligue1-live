@@ -14,6 +14,9 @@ Application web de suivi de la Ligue 1, développée avec **Laravel 13**, Vue 3 
 - Dernières compositions disponibles sur un terrain.
 - Statistiques et événements des matchs selon les données disponibles.
 - Archives des saisons précédentes.
+- Actualités : page `/actualites`, accès dans la navigation PC, en haut sur mobile et dans le menu ; deux dernières brèves sur l’accueil. Titres des dernières 24 heures issus du flux RSS public Maxifoot, sans archives, filtrés sur les rubriques Ligue 1 et clubs français, lien vers l’article original, sans copie d’articles ni images. Cache serveur partagé de dix minutes, dernières données conservées pendant 24 heures en cas de panne, nouvelles tentatives espacées d’une minute. Sans clé API ni abonnement. PHP SimpleXML nécessaire.
+- Raccourci sur l’écran d’accueil : menu → « Ajouter à l’écran d’accueil », visible lorsque le navigateur propose l’installation native et déclenchée directement au clic. Sur iPhone/iPad, l’ajout reste accessible depuis le menu de Safari. Icône dédiée et ouverture en fenêtre autonome ; connexion Internet nécessaire, sans cache hors ligne.
+- Invitation discrète à l’installation après trois visites espacées d’au moins 30 minutes et 20 secondes sur la page après l’introduction. Affichée uniquement si l’installation native est disponible, en dehors des comptes et informations, sans fenêtre ouverte. « Ajouter » et « Plus tard » ; au maximum une invitation par semaine, avec un nouveau délai de sept jours après un refus ou une tentative depuis le menu. Le menu reste indépendant de ce délai. Si le stockage local est bloqué, aucune invitation automatique.
 
 ## Technologies
 

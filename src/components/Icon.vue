@@ -2,6 +2,8 @@
 defineProps({ name: String, size: { type: Number, default: 20 } })
 const paths = {
   menu: 'M4 6h16M4 12h16M4 18h16',
+  plus: 'M12 5v14M5 12h14',
+  news: 'M4 3h13v18H4V3Zm13 5h3v13h-3M7 7h7M7 11h7M7 15h3M7 18h7',
   bell: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4',
   assist: 'M3 12h15m-5-5 5 5-5 5M3 5h5M3 19h5',
   ball: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 5 4 3-1.5 4h-5L8 11l4-3Zm-8 3 4 0m1.5 4-2 4m7-4 2 4M12 3v5m4 3h4',

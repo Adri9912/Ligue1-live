@@ -1,6 +1,10 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FootballController;
+Route::get('/news', function () {
+    $data = \App\Football\News::get();
+    return response()->json($data, empty($data['articles']) && isset($data['error']) ? 503 : 200)->header('Cache-Control', 'no-store');
+});
 Route::get('/{section}', FootballController::class)->where('section', 'status|matches|overview');
 
 Route::get('/portraits/{id}',function(string $id) { return response()->json(\App\Football\Portraits::get((int)$id))->header('Cache-Control','no-store'); })->where('id','[0-9]{1,10}');

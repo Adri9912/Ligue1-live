@@ -128,4 +128,5 @@ canvas{width:100%;height:100%;display:block}
 .intro-skip{position:absolute;right:27px;top:22px;padding:10px 15px;min-height:44px;background:#142132;border:1px solid #ffffff26;border-radius:7px;color:#e8edf5;font:inherit;font-size:12px;cursor:pointer}.intro-skip span{margin-left:18px;color:#b0bdcc}.intro-skip:hover{background:#263548}.intro-skip:focus-visible{outline:3px solid #bcf45a;outline-offset:4px}
 @media(max-width:760px){.ball-wrap{width:min(85vw,55vh)}.logo-name{font-size:clamp(29px,8vw,54px);letter-spacing:-1.4px}.logo-emblem{width:58px;height:58px;border-radius:15px}.logo-emblem svg{width:40px;height:40px}.logo-reveal p{font-size:7px;letter-spacing:1.5px}.intro-caption{left:18px;top:25px;font-size:7px}.intro-skip{right:18px;top:13px}.stadium-lines{inset:30% -70% -15%}.trails i{width:70%}}
 
+@media(max-width:760px){.intro-skip span{display:none}}
 </style>

@@ -7,7 +7,7 @@ const isContact = computed(() => route.path === '/contact')
 const contactEmail = ''
 </script>
 <template>
-  <div class="page-heading"><span class="eyebrow">LIGUE 1 LIVE · PROJET INDÉPENDANT</span><h1>{{ isContact ? 'Contact' : 'À propos' }}<span class="heading-dot">.</span></h1><p>{{ isContact ? 'Une remarque, une idée ou un problème à signaler ?' : 'Le championnat, au plus près.' }}</p></div>
+  <div class="page-heading"><span class="eyebrow">LIGUE 1 LIVE · PROJET INDÉPENDANT</span><h1>{{ isContact ? 'Contact' : 'À propos' }}</h1><p>{{ isContact ? 'Une remarque, une idée ou un problème à signaler ?' : 'Le championnat, au plus près.' }}</p></div>
   <section v-if="isContact" class="panel information-panel"><h2>Parlons du site</h2><p>Vos idées et vos retours permettent d’améliorer Ligue 1 Live.</p><a v-if="contactEmail" :href="`mailto:${contactEmail}`" class="button">Écrire un e-mail</a><p v-else class="contact-pending">Le contact par e-mail sera disponible prochainement.</p><p class="muted">Aucun formulaire ni compte n’est nécessaire.</p></section>
   <div v-else class="information-sections">
     <section class="panel information-panel"><h2>Une seule compétition. Toute votre passion.</h2><p>Ligue 1 Live est un projet personnel consacré au championnat de France : rencontres, résultats, classement, clubs et suivi de votre équipe favorite.</p><p>Le site est développé avec Vue et Laravel. Il s’agit d’un projet indépendant, sans affiliation officielle avec la Ligue ou les clubs.</p></section>

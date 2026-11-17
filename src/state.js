@@ -10,8 +10,8 @@ export const state = reactive({
   refreshMode: 'auto', manualRefresh: null, budget: null, nextRefreshAt: null, controlReady: false, refreshSerial: 0, lastRefreshWasManual: false,
   matchFilters: { filter: 'all', round: null, selectedTeam: '', followCurrentRound: true },
   loading: true, refreshing: false, error: '', favorite: null, favoriteSaving: false, favoriteError: '', favoriteCandidate: null,
-  themePreference: ['light', 'dark'].includes(read('l1-theme', 'auto')) ? read('l1-theme', 'auto') : 'auto',
-  theme: document.documentElement.dataset.theme || themeAt(read('l1-theme', 'auto')), pickerOpen: false, storageError: '',
+  themePreference: ['light', 'dark'].includes(read('l1-theme', 'dark')) ? read('l1-theme', 'dark') : 'auto',
+  theme: document.documentElement.dataset.theme || themeAt(read('l1-theme', 'dark')), pickerOpen: false, storageError: '',
 })
 export const favoriteTeam = computed(() => state.teams.find(t => t.id === state.favorite))
 watch(() => [account.ready, account.enabled, account.user?.id, account.following, state.source], () => {

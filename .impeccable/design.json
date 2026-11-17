@@ -1,0 +1,16 @@
+{
+  "scope": "homepage",
+  "mode": "operate",
+  "reference": "User supplied blue electric / gold sports mockups",
+  "tokens": {
+    "background": "#020c1b",
+    "surface": "#071a2f",
+    "text": "#f2f6ff",
+    "muted": "#b0c8e4",
+    "blue": "#008aff",
+    "gold": "#f4c364"
+  },
+  "font": "Barlow ExtraBold Italic",
+  "asset": "public/images/stadium-tunnel-v2.webp",
+  "composition": "Large featured live match in hero, news immediately below, no separate live strip"
+}

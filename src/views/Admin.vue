@@ -36,7 +36,7 @@ onUnmounted(()=>clearInterval(activityTimer))
 </script>
 <template>
   <div class="admin-page">
-    <div class="page-heading"><span class="eyebrow">ESPACE PRIVÉ</span><h1>Administration<span class="heading-dot">.</span></h1><p>Les comptes, les rappels et la consommation des données.</p></div>
+    <div class="page-heading"><span class="eyebrow">ESPACE PRIVÉ</span><h1>Administration</h1><p>Les comptes, les rappels et la consommation des données.</p></div>
     <p v-if="loading" role="status">Chargement de l’administration…</p>
     <section v-else-if="!account.user" class="panel account-panel"><h2>Connexion nécessaire</h2><RouterLink to="/connexion" class="text-button">Se connecter</RouterLink></section>
     <section v-else-if="account.user.role!=='admin' || !account.user.email_verified_at" class="panel account-panel"><h2>Accès réservé</h2><p>Un compte administrateur avec une adresse vérifiée est nécessaire.</p><RouterLink to="/" class="text-button">Retour aux matchs</RouterLink></section>

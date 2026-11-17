@@ -9,11 +9,12 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "vite build",
-    "start": "php artisan serve --host=127.0.0.1 --port=8000",
+    "start": "php artisan serve --host=127.0.0.1 --port=8001",
     "test": "node --test tests/*.test.mjs",
     "test:php": "php artisan test"
   },
   "dependencies": {
+    "gsap": "^3.15.1",
     "vue": "^3.5.0",
     "vue-router": "^4.5.0"
   },

@@ -1,7 +1,7 @@
 <script setup>
 import NewsFeed from '../components/NewsFeed.vue'
 </script>
-<template><div class="news-page"><div class="page-heading"><h1>Actualités<span class="heading-dot">.</span></h1><p>Les dernières 24 heures de la Ligue 1 et des clubs français, par Maxifoot.</p></div><NewsFeed /></div></template>
+<template><div class="news-page"><div class="page-heading"><h1>Actualités</h1><p>Les dernières 24 heures de la Ligue 1 et des clubs français, par Maxifoot.</p></div><NewsFeed /></div></template>
 <style scoped>
 .news-page { max-width:880px; margin:0 auto; padding-bottom:12px; }
 .news-page .page-heading { padding:40px 0 30px; }

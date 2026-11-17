@@ -32,7 +32,7 @@ watch(selected,()=>{activePlayer.value=null;load()},{immediate:true})
 onUnmounted(()=>version++)
 </script>
 <template>
-  <div class="page-heading"><span class="eyebrow">DERRIÈRE LE BLASON, UNE HISTOIRE.</span><h1>Les clubs<span class="heading-dot">.</span></h1><p>Effectifs, stades et palmarès des clubs de Ligue 1 · Saison {{ state.season }}–{{ state.season+1 }}.</p></div>
+  <div class="page-heading"><span class="eyebrow">DERRIÈRE LE BLASON, UNE HISTOIRE.</span><h1>Les clubs</h1><p>Effectifs, stades et palmarès des clubs de Ligue 1 · Saison {{ state.season }}–{{ state.season+1 }}.</p></div>
   <template v-if="!selected"><label class="club-search"><Icon name="search" :size="18" /><span class="sr-only">Rechercher un club</span><input v-model="search" type="search" placeholder="Rechercher un club…" /></label><div class="clubs-grid"><RouterLink v-for="club in clubs" :key="club.id" :to="`/clubs/${club.id}`" class="panel club-tile"><Badge :team="club" size="large" /><div><h2>{{ club.name }}</h2><span>Effectif · Stade · Palmarès</span></div><Icon name="arrow" :size="17" /></RouterLink></div><p v-if="!clubs.length" class="empty panel">Aucun club ne correspond à votre recherche.</p></template>
   <template v-else><RouterLink to="/clubs" class="back-link"><Icon name="back" :size="16" />Tous les clubs</RouterLink>
     <div v-if="loading" class="loading-state" role="status"><span class="loader"></span><h2>Dans les coulisses du club…</h2><p>Chargement de l’effectif et des informations.</p></div>

@@ -56,7 +56,7 @@ jobs:
   deploy:
     name: Déploiement alwaysdata
     needs: [application, laravel]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: ${{ false }} # V2 locale : deploiement desactive
     runs-on: ubuntu-latest
     timeout-minutes: 10
     concurrency:

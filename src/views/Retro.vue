@@ -43,7 +43,7 @@ watch(() => route.query.saison, value => { const parsed=Number(value) || 2024; i
 onUnmounted(()=>version++)
 </script>
 <template>
-  <div class="page-heading"><span class="eyebrow">LES SAISONS PASSENT. LES SOUVENIRS RESTENT.</span><h1>Rétro<span class="heading-dot">.</span></h1><p>Retrouvez les classements, les résultats et les joueurs qui ont marqué la Ligue 1.</p></div>
+  <div class="page-heading"><span class="eyebrow">LES SAISONS PASSENT. LES SOUVENIRS RESTENT.</span><h1>Rétro</h1><p>Retrouvez les classements, les résultats et les joueurs qui ont marqué la Ligue 1.</p></div>
   <section class="panel retro-toolbar"><label class="retro-select"><Icon name="clock" :size="20" /><span>Saison<select v-model.number="year" :disabled="!seasons.length"><option v-for="s in seasons" :key="s" :value="s">{{ s }}–{{ s+1 }}</option></select></span></label><span class="data-pill">ARCHIVES · API-FOOTBALL</span><div class="retro-controls"><span>{{ ({auto:'Actualisation automatique',manual:'Mode manuel',pause:'Appels en pause'})[state.refreshMode] }}</span></div></section>
   <p class="update-note"><Icon name="info" :size="14" />Saisons proposées avec l’offre gratuite. Les archives sont conservées 30 jours pour économiser les appels. Les modes Manuel et Pause choisis dans les réglages s’appliquent aussi ici.</p>
   <nav class="standings-subnav retro-tabs" aria-label="Rubriques rétro"><button v-for="item in tabs" :key="item.id" :class="{active:tab===item.id}" :aria-pressed="tab===item.id" @click="tab=item.id"><Icon :name="item.icon" :size="16" />{{ item.label }}</button></nav>

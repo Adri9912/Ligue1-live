@@ -1,0 +1,5 @@
+{
+  "source": "OpenAI built-in ImageGen",
+  "description": "Illustration photographique d’un stade generique depuis le tunnel, sans attribution a un club reel.",
+  "prompt": "Photorealistic cinematic football stadium entrance, not a website mockup. Wide panoramic 2.5:1 landscape photograph taken at the mouth of a players' tunnel, looking out onto a real green football pitch and packed grandstands at night. Dark navy concrete tunnel edges frame the left and right, brushed metal railings, a slim warm amber practical light on one tunnel wall, distant realistic stadium floodlights and soft blue atmospheric haze. Pitch visible in lower central area, grandstands across the middle. Rich midnight blue shadows, subtle warm light, premium sports documentary mood, elegant and believable. Keep left third darker and less detailed for frontend text, keep right third moderately dark enough for a score panel later. No ball in foreground, no players, no text, no logos, no giant numeral, no lightning trails, no UI, no graphic frames, no fireworks. A new original photographic composition, distinctive and restrained."
+}

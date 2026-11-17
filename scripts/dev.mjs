@@ -25,8 +25,8 @@ if (process.env.LOCAL_MYSQL_DATADIR && process.env.DB_SOCKET && !await socketRea
   }
   if (!ready) { mysql.kill(); throw new Error('MySQL local indisponible. Vérifiez son installation et le dossier privé configuré.') }
 }
-// Le proxy Vite utilise le serveur Laravel sur le port 8000.
-const api = spawn('php', ['artisan', 'serve', '--host=127.0.0.1', '--port=8000', '--tries=1'], { stdio: 'inherit', env: { ...process.env, APP_URL: 'http://127.0.0.1:5173' } })
+// Le proxy Vite utilise le serveur Laravel sur le port 8001.
+const api = spawn('php', ['artisan', 'serve', '--host=127.0.0.1', '--port=8001', '--tries=1'], { stdio: 'inherit', env: { ...process.env, APP_URL: 'http://127.0.0.1:5174' } })
 const web = spawn(process.execPath, ['node_modules/vite/bin/vite.js'], { stdio: 'inherit' })
 let stopping = false
 function stop(code = 0) { if (stopping) return; stopping = true; api.kill(); web.kill(); mysql?.kill(); process.exitCode = code }

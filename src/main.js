@@ -14,6 +14,7 @@ import Information from './views/Information.vue'
 import Statistics from './views/Statistics.vue'
 import NotFound from './views/NotFound.vue'
 import './style.css'
+import './premium-home.css'
 import { claimIntro } from './intro-session.mjs'
 const router = createRouter({
   history: createWebHistory(),

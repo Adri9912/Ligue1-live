@@ -31,6 +31,21 @@ class AccountsTest extends TestCase
         Notification::assertSentTo($user,VerifyEmail::class);
         $this->getJson('/api/account/session')->assertOk()->assertJsonPath('user.id',$user->id);
     }
+    public function test_registration_renders_verification_email_with_local_array_transport(): void {
+        \Illuminate\Support\Facades\Notification::swap(new \Illuminate\Notifications\ChannelManager($this->app));
+        config(['mail.default'=>'array','mail.from.address'=>'no-reply@example.test','mail.from.name'=>'Ligue 1 Live V2']);
+        $this->postJson('/api/account/register',['email'=>'local-v2@example.test','password'=>self::PASS,'password_confirmation'=>self::PASS])->assertOk()->assertJsonPath('user.email','local-v2@example.test');
+        $transport=app('mail.manager')->mailer('array')->getSymfonyTransport();
+        $this->assertInstanceOf(\Illuminate\Mail\Transport\ArrayTransport::class,$transport);
+        $this->assertCount(1,$transport->messages());
+        $mail=$transport->messages()->first()->getOriginalMessage();
+        $this->assertSame('no-reply@example.test',$mail->getFrom()[0]->getAddress());
+        $this->assertStringContainsString('/api/account/email/verify/',$mail->getHtmlBody());
+    }
+    public function test_local_v2_fixture_seeder_refuses_the_testing_environment(): void {
+        $this->expectException(\LogicException::class);
+        (new \Database\Seeders\V2LocalSeeder)->run();
+    }
     public function test_registration_and_password_validation_do_not_store_invalid_users(): void {
         $this->postJson('/api/account/register',['email'=>'bad','password'=>'short','password_confirmation'=>'other'])->assertUnprocessable();
         $this->assertDatabaseCount('users',0);

@@ -1,0 +1,80 @@
+/* Shared V2 skin. Layouts, data and interactions remain owned by the existing views. */
+:root:has(.premium-page) { --navy:#102c4b; --sport-gold:#96610b; --shadow:0 10px 28px #09233d0a; }
+:root[data-theme=dark]:has(.premium-page) { --navy:#031326; --sport-gold:#f4c364; --shadow:0 12px 30px #0002; }
+.premium-page { background:radial-gradient(ellipse at 75% 0%,#147ec516,transparent 55%); }
+.premium-page :is(.panel,.team-dialog,.navigation-menu) { border-color:var(--line); }
+.premium-page .panel { border-radius:14px; background:linear-gradient(135deg,var(--surface),color-mix(in srgb,var(--surface),var(--soft) 35%)); }
+.premium-page .page-heading { padding:36px 0 28px; }
+.premium-page .page-heading h1 { font-family:Barlow Sport,var(--font-sans); font-style:italic; font-size:42px; letter-spacing:-.025em; line-height:1.12; text-wrap:balance; }
+.premium-page .page-heading>p { max-width:70ch; font-size:14px; line-height:1.7; }
+.premium-page .page-heading>.eyebrow { display:none; }
+.premium-page :is(.page-heading,.panel-title,.aside-heading) svg { color:var(--green-ink); }
+.premium-page :focus-visible { outline-color:var(--green-ink); }
+.premium-page .button { min-height:44px; border-radius:9px; transition:background 160ms ease,border-color 160ms ease,transform 160ms ease; }
+.premium-page .button.primary { color:#fff; border-color:#368ee0; background:#075db4; }
+.premium-page .button.primary:hover:not(:disabled) { background:#064e98; }
+.premium-page :is(input,select,textarea) { color:var(--ink); background-color:var(--soft); border-color:var(--line); }
+.premium-page input::placeholder,.premium-page textarea::placeholder { color:var(--muted); opacity:1; }
+.premium-page :is(.standings-subnav a.active,.detail-tabs button.active) { border-color:var(--sport-gold); }
+.premium-page .standings-subnav a.active { color:var(--ink); }
+.premium-page :is(.standings-subnav,.detail-tabs) { scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+.premium-page :is(.segmented button.active,.filter-tabs button.active) { background:var(--green-soft); color:var(--green-ink); }
+.premium-page :is(.standings-table,.players-table,.squad-table,.big-score,.admin-stats) { font-variant-numeric:tabular-nums; }
+.premium-page :is(.standings-table,.players-table,.squad-table) thead { color:var(--muted); }
+.premium-page :is(.data-pill,.coming-soon-badge) { color:var(--green-ink); background:var(--green-soft); border-color:var(--line); }
+.premium-page .ranking-live { color:var(--green-ink); }
+.premium-page .club-tile { min-height:116px; }
+.premium-page .club-tile h2 { font-size:17px; }
+.premium-page .club-tile>svg { color:var(--green-ink); }
+.premium-page :is(.club-profile,.team-page-heading) { padding-bottom:24px; border-bottom:1px solid var(--line); }
+.premium-page .club-profile h2 { font-family:Barlow Sport,var(--font-sans); font-style:italic; }
+.premium-page .team-metrics .panel { border-top-color:var(--sport-gold); }
+.premium-page .match-scoreboard { background:linear-gradient(90deg,#031326ed,#031326a6),url('/images/stadium-tunnel-v2.webp') center 57%/cover; border:1px solid #365777; border-radius:14px; }
+.premium-page .scoreboard-meta { color:#c0d6ee; }
+.premium-page .scoreboard-meta b { color:#f4c364; }
+.premium-page .scoreboard-teams h1 { color:#f2f6ff; }
+.premium-page .big-score strong { font-weight:750; }
+.premium-page .big-score .match-status { color:#f4c364; }
+.premium-page .account-page { max-width:960px; padding-bottom:24px; }
+.premium-page .account-page>form.account-panel { max-width:520px; margin:0 auto 24px; padding:30px; }
+.premium-page .account-page:has(>form)>.page-heading { max-width:520px; margin:auto; }
+.premium-page .account-panel h2 { letter-spacing:-.02em; }
+.premium-page .account-panel input { min-height:48px; }
+.premium-page .account-panel input:focus { border-color:var(--green-ink); }
+.premium-page .account-panel>.button.primary { width:100%; margin-top:8px; }
+.premium-page .account-panel .account-links { gap:16px; }
+.premium-page .account-panel .guest-continue { color:var(--muted); }
+.premium-page :is(.admin-stats strong,.player-value) { color:var(--green-ink); }
+.premium-page .information-panel h2 { color:var(--green-ink); }
+.premium-page .navigation-menu { background:var(--surface); }
+.premium-page .drawer-link-active { color:var(--green-ink); background:var(--green-soft); }
+.premium-page .drawer-links a { min-height:48px; }
+.premium-page .drawer-theme select { min-height:44px; }
+.premium-page .mobile-nav a.active { color:var(--green-ink); }
+.premium-page .mobile-nav a { min-height:48px; }
+.premium-page .team-dialog { background:var(--surface); }
+.premium-page .player-profile-hero { padding:18px; border-radius:12px; background:var(--soft); }
+.premium-page .team-dialog .eyebrow { color:var(--green-ink); }
+@media(hover:hover) and (pointer:fine) {
+ .premium-page :is(.club-tile,.match-card):hover { border-color:var(--green-ink); }
+ .premium-page .button:hover:not(:disabled) { transform:translateY(-1px); }
+}
+@media(max-width:800px) {
+ .premium-page .page-heading h1 { font-size:36px; }
+ .premium-page .club-tile { min-height:100px; }
+ .premium-page .club-tile h2 { font-size:15px; }
+}
+@media(max-width:600px) {
+ .premium-page .page-heading { padding:28px 0 22px; }
+ .premium-page .page-heading h1 { font-size:32px; }
+ .premium-page .page-heading>p { font-size:13px; }
+ .premium-page .account-page>form.account-panel { padding:22px 18px; }
+ .premium-page .account-panel .account-links { gap:12px; }
+ .premium-page .club-tile { padding:18px 15px; }
+ .premium-page .standings-subnav a { min-height:44px; }
+ .premium-page .player-profile-hero { padding:14px; gap:14px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .premium-page *, .premium-page *::before, .premium-page *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
+ .premium-page .button:hover:not(:disabled) { transform:none; }
+}

@@ -32,3 +32,7 @@ Le bandeau utilise desormais stadium-tunnel-v2.webp : entree de stade, atmosphè
 ## Reajustement de disposition
 
 Sous les actualites : calendrier a gauche, classement puis Mon equipe dans la colonne droite. Statistiques sur toute la largeur en dessous, quatre indicateurs en ligne sur ordinateur et deux par ligne sur telephone. Les blocs top buteurs et top passeurs sont retires de l’accueil ; leurs pages existantes restent disponibles.
+
+## Extension du 17 novembre 2026
+
+Le conteneur premium est partagé par toutes les routes. La palette nuit/bleu/or, les titres Barlow Sport et les panneaux existants s’appliquent aux matchs, classements, clubs, statistiques, actualités, comptes et administration via src/premium-pages.css. Le mode clair reste disponible avec un or plus sombre pour les textes. Les structures, données et interactions de chaque vue sont conservées. Le grand bloc À l’affiche reste visible sur tablette. La recette fonctionnelle, les limites et les configurations locales sont documentées dans docs/V2-RECETTE.md. Aucun changement de production.

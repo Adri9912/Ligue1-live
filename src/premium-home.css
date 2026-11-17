@@ -138,7 +138,7 @@
  .premium-home .premium-hero { padding:30px; min-height:300px; }
  .premium-hero .hero-copy h1 { font-size:48px; }
  .premium-hero .hero-copy>p { font-size:12px; }
- .premium-hero .hero-feature { display:none; }
+ .premium-hero .hero-feature { display:block; }
  .premium-home .season-metrics>div { min-height:85px; }
  .premium-home .season-metrics strong { font-size:23px; }
 }

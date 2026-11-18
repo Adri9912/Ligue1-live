@@ -1,11 +1,13 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch, useId } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { state, day, time, statusLabel } from '../state'
 import { searchSite } from '../search.js'
 import Badge from './Badge.vue'
 import Icon from './Icon.vue'
 
+defineProps({ mobile: Boolean })
+const searchId = `site-search-${useId()}`
 const route = useRoute()
 const router = useRouter()
 const dialog = ref(null)
@@ -58,23 +60,24 @@ onBeforeUnmount(closed)
 </script>
 
 <template>
-  <button class="icon-button site-search-toggle" aria-label="Rechercher un club ou un match" title="Rechercher" aria-haspopup="dialog" aria-controls="site-search" :aria-expanded="opened" @click="open"><Icon name="search" :size="21" /></button>
-  <dialog id="site-search" ref="dialog" class="site-search" aria-labelledby="site-search-title" @close="closed" @click="outside" @keydown="trapTab" @keydown.esc.prevent="close">
-    <div class="site-search-heading"><h2 id="site-search-title">Rechercher</h2><button class="icon-button" aria-label="Fermer la recherche" @click="close"><Icon name="close" /></button></div>
+  <button class="icon-button site-search-toggle" :class="{ 'mobile-search-toggle': mobile }" aria-label="Rechercher un club ou un match" title="Rechercher" aria-haspopup="dialog" :aria-controls="searchId" :aria-expanded="opened" @click="open"><Icon name="search" :size="21" /><span v-if="mobile">Recherche</span></button>
+  <dialog :id="searchId" ref="dialog" class="site-search" :aria-labelledby="`${searchId}-title`" @close="closed" @click="outside" @keydown="trapTab" @keydown.esc.prevent="close">
+    <div class="site-search-heading"><h2 :id="`${searchId}-title`">Rechercher</h2><button class="icon-button" aria-label="Fermer la recherche" @click="close"><Icon name="close" /></button></div>
     <form role="search" @submit.prevent="submit">
       <label class="site-search-field"><Icon name="search" :size="21" /><span class="sr-only">Rechercher un club ou un match</span><input ref="field" v-model="query" type="search" placeholder="Un club ou une affiche…" autocomplete="off" enterkeyhint="search" /></label>
     </form>
     <p class="site-search-status" role="status" aria-live="polite"><template v-if="state.loading">Les clubs et les matchs sont en cours de chargement…</template><template v-else-if="!hasQuery">Saisissez au moins deux caractères, par exemple Lyon ou Lyon Marseille.</template><template v-else-if="!resultCount">Aucun club ni match trouvé pour « {{ query.trim() }} ».</template><template v-else>{{ resultCount }} résultat{{ resultCount > 1 ? 's' : '' }} affiché{{ resultCount > 1 ? 's' : '' }}.</template></p>
     <div v-if="hasQuery" class="site-search-results">
-      <section v-if="results.clubs.length" aria-labelledby="site-search-clubs"><h3 id="site-search-clubs">Clubs</h3><ul><li v-for="club in results.clubs" :key="club.id"><RouterLink :to="`/clubs/${club.id}`" @click="close"><Badge :team="club" size="small" /><span><strong>{{ club.name }}</strong><small>Effectif, stade et palmarès</small></span><Icon name="arrow" :size="16" /></RouterLink></li></ul></section>
-      <section v-if="results.matches.length" aria-labelledby="site-search-matches"><h3 id="site-search-matches">Matchs</h3><ul><li v-for="match in results.matches" :key="match.id"><RouterLink :to="`/matchs/${match.id}`" @click="close"><Badge :team="match.home" size="small" /><span><strong>{{ match.home.name }} – {{ match.away.name }}</strong><small>{{ day(match.date, { month: 'short', year: 'numeric' }) }} · {{ time(match.date) }}<template v-if="statusLabel(match) !== time(match.date)"> · {{ statusLabel(match) }}</template></small></span><Icon name="arrow" :size="16" /></RouterLink></li></ul></section>
+      <section v-if="results.clubs.length" :aria-labelledby="`${searchId}-clubs`"><h3 :id="`${searchId}-clubs`">Clubs</h3><ul><li v-for="club in results.clubs" :key="club.id"><RouterLink :to="`/clubs/${club.id}`" @click="close"><Badge :team="club" size="small" /><span><strong>{{ club.name }}</strong><small>Effectif, stade et palmarès</small></span><Icon name="arrow" :size="16" /></RouterLink></li></ul></section>
+      <section v-if="results.matches.length" :aria-labelledby="`${searchId}-matches`"><h3 :id="`${searchId}-matches`">Matchs</h3><ul><li v-for="match in results.matches" :key="match.id"><RouterLink :to="`/matchs/${match.id}`" @click="close"><Badge :team="match.home" size="small" /><span><strong>{{ match.home.name }} – {{ match.away.name }}</strong><small>{{ day(match.date, { month: 'short', year: 'numeric' }) }} · {{ time(match.date) }}<template v-if="statusLabel(match) !== time(match.date)"> · {{ statusLabel(match) }}</template></small></span><Icon name="arrow" :size="16" /></RouterLink></li></ul></section>
     </div>
     <p v-if="state.error && !resultCount" class="site-search-unavailable">Les données sont actuellement indisponibles. Réessayez après le chargement des rencontres.</p>
   </dialog>
 </template>
 
 <style scoped>
-.site-search-toggle { width:40px; height:40px; color:var(--ink); }
+.site-search-toggle { width:40px; min-height:44px; height:auto; align-self:center; color:var(--muted); }
+.mobile-search-toggle { display:flex; flex:1; flex-direction:column; align-items:center; justify-content:flex-start; gap:5px; width:auto; min-width:0; padding:0; border:0; border-radius:0; background:transparent; font-size:9px; font-weight:600; }
 .site-search { width:min(580px,calc(100vw - 32px)); max-height:calc(100dvh - 48px); margin:24px auto; padding:24px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); overflow-y:auto; overscroll-behavior:contain; }
 .site-search::backdrop { background:#07132199; }
 .site-search-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
